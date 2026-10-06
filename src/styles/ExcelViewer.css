@@ -1,0 +1,147 @@
+.excel-container {
+  padding: 20px;
+}
+
+.title {
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 600; /* font-semibold */
+  margin-bottom: 1rem; /* mb-4 */
+}
+
+.controls-container {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.button-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: #0056b3;
+}
+
+.button-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.button-success:hover {
+  background-color: #218838;
+}
+
+.button-warning {
+  background-color: #ffc107;
+  color: black;
+}
+
+.button-warning:hover {
+  background-color: #e0a800;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.file-input {
+  display: none;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 4px;
+  flex: 1 1 100%;
+}
+
+.content-section h3 {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 500; /* font-medium */
+  margin-bottom: 0.5rem; /* mb-2 */
+}
+
+.table-container {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  margin-bottom: 1rem;
+}
+
+.sheets-container {
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.sheet-button {
+  padding: 8px 12px;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sheet-button:hover {
+  background-color: #dbe0e4;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+  border: 1px dashed #dee2e6;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.render-container {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 60vh;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 10px;
+  background-color: #fff;
+}
+
+/* Сохраняет границы и заставляет таблицу занимать всё пространство */
+/* ExcelViewer.css */
+
+.excel-render-area table {
+    border-collapse: collapse;
+    width: 100%;
+    /* Позволяет ячейкам использовать выравнивание из инлайновых стилей */
+    text-align: inherit; 
+}
+
+.excel-render-area td {
+    border: 1px solid #dee2e6;
+    padding: 8px;
+    vertical-align: middle; 
+}
+
+/* Если SheetJS генерирует пустые стили, можно задать стандартное 
+   поведение для центрированных данных из Excel */
+.excel-render-area td[style*="text-align: center"] {
+    text-align: center !important;
+}
+.excel-render-area td[style*="text-align: right"] {
+    text-align: right !important;
+}
+
