@@ -1,67 +1,58 @@
-import React from "react";
-import { Dropdown } from "react-bootstrap";
-import { TableVisibilityControlProps } from "../../types/table";
+import { Table } from "@tanstack/react-table";
 import Checkbox from "../common/Checkbox";
 
-export const ColumnVisibilityControl: React.FC<TableVisibilityControlProps> = ({
+interface ColumnVisibilityControlProps<T extends Record<string, any>> {
+  table: Table<T>;
+}
+
+export function ColumnVisibilityControl<T extends Record<string, any>>({
   table,
-}) => {
-  const columns = table.getAllLeafColumns();
-
-  const handleToggleAll = (visible: boolean) => {
-    table.toggleAllColumnsVisible(visible);
-  };
-
+}: ColumnVisibilityControlProps<T>) {
   return (
-    <Dropdown>
-      <Dropdown.Toggle
-        variant="outline-secondary"
-        size="sm"
-        id="column-visibility-dropdown"
-      >
-        <i className="bi bi-columns-gap me-1"></i> Видимость столбцов
-      </Dropdown.Toggle>
-
-      <Dropdown.Menu
-        className="p-3 shadow-sm"
-        style={{ maxHeight: "350px", overflowY: "auto", minWidth: "240px" }}
-      >
-        <div className="d-flex justify-content-between mb-2 pb-2 border-bottom">
-          <button
-            type="button"
-            className="btn btn-link btn-sm p-0 text-decoration-none"
-            onClick={() => handleToggleAll(true)}
-          >
-            Показать все
-          </button>
-          <button
-            type="button"
-            className="btn btn-link btn-sm p-0 text-decoration-none text-danger"
-            onClick={() => handleToggleAll(false)}
-          >
-            Скрыть все
-          </button>
+    <details className="p-2 col-visibility">
+      <summary className="cursor-pointer font-semibold">
+        Управление видимостью колонок
+      </summary>
+      <div className="inline-block border border-gray-300 rounded p-2 mt-2 bg-white shadow drop-col-names">
+        <div>
+          <label className="block mb-1 flex items-center space-x-2">
+            <Checkbox
+              checked={table.getIsAllColumnsVisible()}
+              onChange={table.getToggleAllColumnsVisibilityHandler()}
+              label="Показать/скрыть все"
+            />
+          </label>
         </div>
-
-        {columns.map((column) => {
-          if (column.id === "select" || column.id === "actions") return null;
-          const header = column.columnDef.header;
-          const label = typeof header === "string" ? header : column.id;
+        <hr className="my-1" />
+        {table.getAllColumns().map((column) => {
+          if (column.depth > 0 || column.id === "select_group") return null;
 
           return (
-            <div key={column.id} className="py-1">
-              <Checkbox
-                id={`col-vis-${column.id}`}
-                label={label}
-                checked={column.getIsVisible()}
-                onChange={(checked) => column.toggleVisibility(checked)}
-              />
+            <div key={column.id} className="px-1">
+              <label className="flex items-center space-x-2">
+                <Checkbox
+                  checked={column.getIsVisible()}
+                  label={
+                    typeof column.columnDef.header === "string"
+                      ? column.columnDef.header
+                      : column.id
+                  }
+                  onChange={(isVisible) => {
+                    column.toggleVisibility(isVisible);
+                    if (column.getCanHide()) {
+                      column.getLeafColumns().forEach((leaf) => {
+                        leaf.toggleVisibility(isVisible);
+                      });
+                    }
+                  }}
+                />
+              </label>
             </div>
           );
         })}
-      </Dropdown.Menu>
-    </Dropdown>
+      </div>
+    </details>
   );
-};
+}
 
 export default ColumnVisibilityControl;

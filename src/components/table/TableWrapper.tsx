@@ -6,12 +6,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   tableContainerRef,
 }) => {
   return (
-    <div
-      ref={tableContainerRef}
-      className="app-table-wrapper border shadow-sm"
-      style={{ height: "70vh" }}
-    >
-      {children}
+    <div ref={tableContainerRef as any} className="table-wrapper">
+      <div className="table-body-container">{children}</div>
     </div>
   );
 };

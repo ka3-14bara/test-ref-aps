@@ -1,25 +1,29 @@
-import React from "react";
+import { TableRow } from "./TableRow";
 import { TableBodyProps } from "../../types/table";
-import TableRow from "./TableRow";
+import { Row } from "@tanstack/react-table";
 
-export const TableBody: React.FC<TableBodyProps> = ({ rows }) => {
-  if (rows.length === 0) {
-    return (
-      <tbody>
-        <tr>
-          <td colSpan={100} className="text-center py-5 text-muted">
-            <i className="bi bi-inbox fs-3 d-block mb-2"></i>
-            Данные отсутствуют
-          </td>
-        </tr>
-      </tbody>
-    );
-  }
+interface ExtendedBodyProps<
+  T extends Record<string, any>,
+> extends TableBodyProps<T> {
+  rowSelection: Record<string, boolean>;
+  columnVisibility: Record<string, boolean>;
+}
 
+export const TableBody = <T extends Record<string, any>>({
+  rows,
+  rowSelection,
+  columnVisibility,
+}: ExtendedBodyProps<T>) => {
   return (
-    <tbody>
-      {rows.map((row, index) => (
-        <TableRow key={row.id} row={row} index={index} />
+    <tbody className="table-body">
+      {rows.map((row: Row<T>) => (
+        <TableRow<T>
+          key={row.id}
+          row={row}
+          index={row.index}
+          rowSelection={rowSelection || {}}
+          columnVisibility={columnVisibility || {}}
+        />
       ))}
     </tbody>
   );

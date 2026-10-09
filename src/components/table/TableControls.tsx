@@ -1,14 +1,12 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import { SearchPanel } from "../common/SearchPanel";
 import { TableControlsProps } from "../../types/table";
-import SearchPanel from "../common/SearchPanel";
-import ColumnVisibilityControl from "./ColumnVisibilityControl";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export const TableControls: React.FC<TableControlsProps> = ({
+export const TableControls = <T extends Record<string, any>>({
   searchTerm,
   onSearch,
   headers,
-  isShowAdd = false,
+  isShowAdd,
   pageName,
   isShowDeleted,
   onDelState,
@@ -16,105 +14,130 @@ export const TableControls: React.FC<TableControlsProps> = ({
   selectedRows,
   openActionModal,
   handleStatusChange,
-  table,
-  btnCreateNewText = "Добавить",
+  btnCreateNewText,
   drafts,
   handleDownload,
+  isServerSearch,
+  toggleServerSearch,
+  onSearchSubmit,
   handleOpenViewerClick,
-}) => {
+}: TableControlsProps<T>) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
-    <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-      {/* Левая группа: Поиск и переключатель видимости столбцов */}
-      <div className="d-flex align-items-center gap-2 flex-grow-1 flex-md-grow-0">
-        <SearchPanel
-          searchTerm={searchTerm}
-          onSearch={onSearch}
-          headers={headers}
-        />
-        <ColumnVisibilityControl table={table} />
-      </div>
-
-      {/* Правая группа: Действия и переход по роутам */}
-      <div className="d-flex align-items-center gap-2">
-        {selectedRows.length === 1 && handleOpenViewerClick && (
-          <button
-            className="btn btn-outline-info btn-sm"
-            onClick={handleOpenViewerClick}
-          >
-            <i className="bi bi-file-earmark-text me-1"></i> Документ
-          </button>
-        )}
-
-        {selectedRows.length > 0 && (
-          <div className="btn-group btn-group-sm">
-            <button
-              className="btn btn-outline-primary"
-              onClick={openActionModal}
-            >
-              <i className="bi bi-pencil me-1"></i> Действия (
-              {selectedRows.length})
-            </button>
-            <button
-              className="btn btn-outline-danger"
-              onClick={() => handleStatusChange(true)}
-            >
-              <i className="bi bi-trash"></i>
-            </button>
-            <button
-              className="btn btn-outline-success"
-              onClick={() => handleStatusChange(false)}
-            >
-              <i className="bi bi-arrow-counterclockwise"></i>
-            </button>
-          </div>
-        )}
-
-        {handleDownload && (
-          <button
-            className="btn btn-outline-success btn-sm"
-            onClick={handleDownload}
-            title="Экспорт"
-          >
-            <i className="bi bi-file-earmark-excel me-1"></i> Excel
-          </button>
-        )}
-
-        <button
-          className={`btn btn-sm ${isShowDeleted ? "btn-warning" : "btn-outline-secondary"}`}
-          onClick={() => onDelState(!isShowDeleted)}
+    <div className="table-controls items-center mb-0 mt-2">
+      <nav aria-label="breadcrumb">
+        <ol className="breadcrumb">
+          <li className="breadcrumb-item">
+            <a href="/">Главная</a>
+          </li>
+          <li className="breadcrumb-item active" aria-current="page">
+            <span>{pageName}</span>
+          </li>
+        </ol>
+      </nav>
+      <div className="books-container-wrap flex flex-wrap gap-4 items-center">
+        <div
+          className="books-cont flex items-center justify-between w-full"
+          style={{ justifyContent: "space-between" }}
         >
-          <i className="bi bi-eye me-1"></i>
-          {isShowDeleted ? "Скрыть удаленные" : "Показать удаленные"}
-        </button>
+          <SearchPanel
+            searchTerm={searchTerm}
+            onSearch={onSearch}
+            headers={headers}
+            isServerSearch={isServerSearch}
+            onSearchSubmit={onSearchSubmit}
+            toggleServerSearch={toggleServerSearch}
+          />
+          <div className="flex gap-4">
+            <button
+              key={"ShowHideDelited"}
+              className={`btn ${
+                isShowDeleted
+                  ? "btn btn-outline-warning"
+                  : "btn-outline-success"
+              }`}
+              onClick={() => onDelState(!isShowDeleted)}
+            >
+              {isShowDeleted ? "Убрать удалённые" : "Отобразить удалённые"}
+            </button>
 
-        {drafts && (
-          <button
-            className="btn btn-outline-secondary btn-sm"
-            onClick={() => navigate(drafts)}
-          >
-            <i className="bi bi-archive me-1"></i> Черновики
-          </button>
-        )}
+            {drafts !== "" && (
+              <button
+                type="button"
+                className="btn btn-outline-secondary space-x-4 text-sm w-64 ml-2"
+                style={{ maxHeight: "38px" }}
+                onClick={() => {
+                  navigate(drafts);
+                  window.localStorage.removeItem("addStation");
+                }}
+              >
+                📋 Черновики
+              </button>
+            )}
 
-        {isShowAdd && (
-          <button
-            className="btn btn-primary btn-sm fw-semibold"
-            style={{
-              backgroundColor: "#FFD369",
-              borderColor: "#E5BD55",
-              color: "#000",
-            }}
-            onClick={
-              handleCreateNew
-                ? handleCreateNew
-                : () => navigate(`${pageName}/add`)
-            }
-          >
-            <i className="bi bi-plus-lg me-1"></i> {btnCreateNewText}
-          </button>
-        )}
+            {isShowAdd && (
+              <button
+                key={"createNew"}
+                onClick={handleCreateNew}
+                className="space-x-4 text-sm w-64 btn btn-success ml-2"
+              >
+                {btnCreateNewText}
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="books-cont gap-2">
+          {selectedRows.length > 0 && (
+            <div className="ml-4 flex gap-2">
+              <button
+                onClick={openActionModal}
+                className="btn btn-outline-primary"
+              >
+                {selectedRows.length === 1
+                  ? "Изменить элемент"
+                  : "Массовые действия"}
+              </button>
+              {selectedRows.length === 1 &&
+                !(selectedRows[0] as any).deleted && (
+                  <button
+                    onClick={handleStatusChange}
+                    className="btn btn-outline-danger ml-4"
+                  >
+                    Удалить
+                  </button>
+                )}
+              {selectedRows.length === 1 &&
+                location.pathname === "/documents" && (
+                  <>
+                    <button
+                      onClick={handleDownload}
+                      className="btn btn-outline-success ml-4"
+                    >
+                      Скачать документ
+                    </button>
+                    <button
+                      className="btn btn-outline-secondary ml-4"
+                      disabled={selectedRows.length !== 1}
+                      onClick={handleOpenViewerClick}
+                    >
+                      Посмотреть файл
+                    </button>
+                  </>
+                )}
+              {selectedRows.length === 1 &&
+                (selectedRows[0] as any).deleted && (
+                  <button
+                    onClick={handleStatusChange}
+                    className="btn btn-outline-success ml-4"
+                  >
+                    Восстановить
+                  </button>
+                )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
