@@ -1,6 +1,5 @@
-// useTrainFormState.ts
 import { useState, useCallback } from "react";
-import { FormDataTrain, SelectedDetector } from "../components/createPages/AddTypes";
+import { FormDataTrain, SelectedDetector } from "../types/creation";
 import GetInitialValue from "../utils/GetInitialValue";
 
 const getEmptyFormData = (): FormDataTrain => ({
@@ -25,7 +24,6 @@ const getEmptyFormData = (): FormDataTrain => ({
   adminDoc: null,
   commissionDoc: null,
   projectDoc: null,
-  //workTypes: null,
   deleted: false,
   trainTypesValue: {},
   detectorsValue: {},
@@ -47,7 +45,6 @@ export const useTrainFormState = (storageKey?: string) => {
   const [selectedDetectors, setSelectedDetectors] = useState<
     SelectedDetector[]
   >([]);
-  //const [resultData, setResultData] = useState<WorkTypes[] | null>(null);
 
   const updateFormData = useCallback(
     (
@@ -73,7 +70,6 @@ export const useTrainFormState = (storageKey?: string) => {
     const empty = getEmptyFormData();
     setFormData(empty);
     setSelectedDetectors([]);
-    //setResultData(null);
     if (storageKey) {
       localStorage.removeItem(storageKey);
     }
@@ -84,8 +80,6 @@ export const useTrainFormState = (storageKey?: string) => {
     setFormData: updateFormData,
     selectedDetectors,
     setSelectedDetectors,
-    //resultData,
-    //setResultData,
     resetForm,
   };
 };

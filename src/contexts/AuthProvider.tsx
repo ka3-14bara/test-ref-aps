@@ -1,41 +1,45 @@
-import { useState, useEffect, ReactNode } from "react";
-import { axiosInstance } from "../api/axios";
-import { AuthContext, User } from "../hooks/useAuth";
+import React, { useState, useEffect, ReactNode } from "react";
+import { axiosInstance } from "../api/client";
+import { AuthContext } from "../hooks/useAuth";
+import { User } from "../types/api";
 
-{
-  /*
-  Компонент, который является оберткой для секьюрных путей.
-  Предоставляет контекст для своих дочерних элементов, а именно
-  isAuthenticated и loading. Они доступны через самописный хук 
-  AuthContext
-  */
-}
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null); // Храним объект пользователя целиком
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkAuthStatus = async () => {
       try {
-        // 1. Проверяем сессию/обновляем токен
         await axiosInstance.post("/auth/refresh");
-
-        // 2. Сразу запрашиваем данные профиля (роль, username)
-        const response = await axiosInstance.get("/auth/info");
-        setUser(response.data); // Записываем { username, role, permissions }
-      } catch (err) {
-        setUser(null);
+        const response = await axiosInstance.get<User>("/auth/info");
+        if (isMounted) {
+          setUser(response.data);
+        }
+      } catch {
+        if (isMounted) {
+          setUser(null);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
+
     checkAuthStatus();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const login = async () => {
-    // После логина желательно подтянуть инфо о пользователе
+  const login = async (): Promise<void> => {
     try {
-      const response = await axiosInstance.get("/auth/info");
+      const response = await axiosInstance.get<User>("/auth/info");
       setUser(response.data);
     } catch (e) {
       setUser(null);
@@ -43,14 +47,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
+  const logout = (): void => {
     setUser(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated: !!user, // Если user не null — значит авторизован
+        isAuthenticated: !!user,
         user,
         loading,
         login,
@@ -61,3 +65,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;

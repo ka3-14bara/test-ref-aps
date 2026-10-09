@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { axiosInstance } from "../api/axios";
+import { axiosInstance } from "../api/client";
 
 export type FileType = "excel" | "docViewer" | "unsupported";
 
@@ -30,7 +30,6 @@ export const useDocumentViewer = (): UseDocumentViewerReturn => {
       return "excel";
     }
 
-    // Форматы, которые нативно и без облака хорошо переварит @iamjariwala/react-doc-viewer
     const supportedExtensions = ["pdf", "docx", "png", "jpg", "jpeg", "txt"];
     if (extension && supportedExtensions.includes(extension)) {
       return "docViewer";
@@ -40,7 +39,7 @@ export const useDocumentViewer = (): UseDocumentViewerReturn => {
   };
 
   const openViewer = useCallback(async (selectedRow: any) => {
-    if (!selectedRow || !selectedRow.id || !selectedRow.filePath) return;
+    if (!selectedRow?.id || !selectedRow?.filePath) return;
 
     const detectedType = getFileType(selectedRow.filePath);
     setFileType(detectedType);
@@ -49,20 +48,15 @@ export const useDocumentViewer = (): UseDocumentViewerReturn => {
     setIsLoading(true);
 
     try {
-      // Запрашиваем файл как arraybuffer, чтобы удовлетворить оба вьюера
       const response = await axiosInstance.get(
         `/documents/${selectedRow.id}/download`,
-        {
-          responseType: "arraybuffer",
-        },
+        { responseType: "arraybuffer" },
       );
 
       const buffer = response.data;
       setFileBuffer(buffer);
 
-      // Создаем Blob URL для react-doc-viewer или системного скачивания
       const contentType = response.headers["content-type"];
-
       const blob = new Blob([buffer], {
         type: contentType ? String(contentType) : undefined,
       });
@@ -70,16 +64,17 @@ export const useDocumentViewer = (): UseDocumentViewerReturn => {
       const url = window.URL.createObjectURL(blob);
       setFileUrl(url);
     } catch (err: any) {
-      console.error("Ошибка при кэшировании документа:", err);
-      setError("Не удалось загрузить документ для просмотра");
-      alert("Не удалось загрузить документ для просмотра" + err);
+      console.error("Ошибка при загрузке документа:", err);
+      const msg =
+        "Не удалось загрузить документ для просмотра: " + (err.message || "");
+      setError(msg);
+      alert(msg);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const closeViewer = useCallback(() => {
-    // освобождаем оперативную память браузера от Blob-кэша
     if (fileUrl) {
       window.URL.revokeObjectURL(fileUrl);
     }

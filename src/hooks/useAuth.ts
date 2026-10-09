@@ -1,11 +1,5 @@
 import { createContext, useContext } from "react";
-
-export interface User {
-  id: number;
-  username: string;
-  role: string;
-  permissions: string[];
-}
+import { User } from "../types/api";
 
 export interface AuthContextInterface {
   isAuthenticated: boolean;
@@ -15,13 +9,11 @@ export interface AuthContextInterface {
   logout: () => void;
 }
 
-// Создаем контекст с типом null по умолчанию
 export const AuthContext = createContext<AuthContextInterface | null>(null);
 
-// Хук для использования контекста
-export const useAuth = () => {
+export const useAuth = (): AuthContextInterface => {
   const context = useContext(AuthContext);
-  if (context === null) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

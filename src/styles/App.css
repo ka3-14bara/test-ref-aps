@@ -1,297 +1,50 @@
+/* Стили приложения с соблюдением дизайн-системы */
 :root {
-  --bs-body-font-family: 'Open Sans', sans-serif !important;
-  font-size: 16px; /* ← база для rem (чтобы 1rem = 16px) */
+  --app-primary-yellow: #ffd369;
+  --app-primary-yellow-hover: #e5bd55;
+  --app-border-color: #dee2e6;
 }
 
 body {
-  background-color: #EEEEEE;
-  font-size: 16px;
-}
-
-#search {
-  background-color: #cfc0bd;
-  border: 1px solid #767522;
-}
-
-#orderBtn,
-#cartBtn,
-.btBlue {
-  background-color: #446d79;
-  color: white;
-  font-size: 0.875rem;
-}
-
-#orderBtn:hover,
-#cartBtn:hover,
-.btBlue:hover {
-  background-color: #8e9ea4;
-  border-color: #446d79;
-  color: black;
-}
-
-#searchBtn,
-#loginBtn,
-.btGreen {
-  background-color: #60712f;
-  color: white;
-  font-size: 0.875rem;
-}
-
-#searchBtn:hover,
-#loginBtn:hover,
-.btGreen:hover {
-  background-color: #989976;
-  border-color: #60712f;
-  color: black;
-}
-
-#logoutBtn,
-.btRed {
-  background-color: #974449;
-  color: white;
-  border: 0px;
-  /* убран align-items: flex-end — ошибка */
-  font-size: 0.875rem;
-}
-
-#logoutBtn:hover,
-.btRed:hover {
-  background-color: #ac7576;
-  border-color: #974449;
-  color: black;
-}
-
-#button-minus {
-  width: 40px;
-  text-align: center;
-  font-size: 1.25rem;
-}
-
-#button-plus {
-  width: 40px;
-  text-align: center;
-  font-size: 1.25rem;
-}
-
-#trunk {
-  -webkit-line-clamp: 2;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-decoration: none;
-  color: black;
-  font-size: 1.25rem;
-}
-
-.deletedRow {
-  background-color: #974449 !important;
-  color: white !important;
-}
-
-/* Chrome, Safari, Edge, Opera */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
   margin: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
 }
 
-/* Firefox */
-input[type="number"] {
-  -moz-appearance: textfield;
+/* Переопределения кнопок для фирменного желтого акцента */
+.btn-warning-custom {
+  background-color: var(--app-primary-yellow);
+  border-color: var(--app-primary-yellow-hover);
+  color: #000;
+  font-weight: 600;
 }
 
-.rose {
-  width: 3%;
+.btn-warning-custom:hover,
+.btn-warning-custom:focus {
+  background-color: var(--app-primary-yellow-hover);
+  border-color: #caa545;
+  color: #000;
 }
 
-.checkbox-wrapper-47 input.checkbox-input {
-  display: none;
+/* Устранение обрезания контента при фиксации высоты таблиц на ПК/ноутбуках */
+.app-table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #adb5bd #f8f9fa;
 }
 
-.checkbox-wrapper-47 label.checkbox-label {
-  position: relative;
-  padding-left: 2em;
-  padding-right: 1em;
-  line-height: 2;
-  cursor: pointer;
-  display: inline-flex;
-  font-size: 1rem; /* ← добавлен, чтобы текст чекбокса был 16px */
+.app-table-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.checkbox-wrapper-47 label.checkbox-label:before {
-  box-sizing: border-box;
-  content: " ";
-  position: absolute;
-  top: 0.3em;
-  left: 0;
-  display: block;
-  width: 1.4em;
-  height: 1.4em;
-  border: 2px solid #9098a9;
-  z-index: -1;
+.app-table-wrapper::-webkit-scrollbar-track {
+  background: #f8f9fa;
 }
 
-.checkbox-square:before {
-  border-radius: 6px;
-}
-
-.checkbox-round:before {
-  border-radius: 40px;
-}
-
-.checkbox-wrapper-47 input.checkbox-input:checked + label.checkbox-label {
-  padding-left: 1.5em;
-  padding-right: 1.5em;
-  color: #0f5229;
-}
-
-.checkbox-wrapper-47 input.checkbox-input:checked + label.checkbox-label:before {
-  top: 0;
-  width: 100%;
-  height: 2em;
-  background: #b7e6c9;
-  border-color: #2cbc63;
-}
-
-.checkbox-wrapper-47 label.checkbox-label,
-.checkbox-wrapper-47 label.checkbox-label::before {
-  transition: 0.25s all ease;
-}
-
-.radio {
-  display: none;
-}
-
-.radio.active {
-  display: block;
-}
-
-.upload-container {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 400px;
-  text-align: center;
-}
-
-.upload-area {
-  border: 2px dashed #ccc;
-  border-radius: 8px;
-  padding: 2rem;
-  margin-bottom: 1rem;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-}
-
-.upload-area:hover {
-  border-color: #007bff;
-}
-
-.upload-label {
-  display: block;
-  color: #666;
-  font-size: 1rem;
-}
-
-.file-list {
-  margin-top: 1rem;
-  text-align: left;
-}
-
-.file-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
+.app-table-wrapper::-webkit-scrollbar-thumb {
+  background-color: #adb5bd;
   border-radius: 4px;
-  margin-bottom: 0.5rem;
-  background: #f9f9f9;
-}
-
-.file-item button {
-  background: #ff4d4d;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.file-item button:hover {
-  background: #ff1a1a;
-}
-
-.upload-button {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  margin-top: 1rem;
-}
-
-.upload-button:hover {
-  background: #0056b3;
-}
-
-[data-tooltip] {
-  position: relative;
-}
-
-[data-tooltip]::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  width: 200px;
-  left: 100pt;
-  top: 0;
-  background: #fbed9e;
-  color: black;
-  padding: 0.5em;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-  pointer-events: none;
-  opacity: 0;
-  font-size: 0.875rem;
-}
-
-[data-tooltip]:hover::after {
-  opacity: 1;
-  top: 2em;
-  z-index: 1000;
-}
-
-.month-option {
-  border-radius: 4px;
-}
-
-.month-option:hover {
-  background: #fbed9e;
-  color: black;
-}
-
-#nameInputId {
-  opacity: 0;
-  height: 0px;
-  display: block;
-}
-
-table.dataTable thead th,
-table.dataTable tbody td {
-  padding: 4px 8px;
-  line-height: 1.3;
-  font-size: 0.875rem;
-}
-
-.fa-tag,
-.fa-clock,
-.fa-layer-group {
-  font-size: 0.875rem;
-}
-
-input::placeholder,
-textarea::placeholder {
-  font-size: 0.875rem;
 }

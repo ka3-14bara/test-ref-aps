@@ -1,0 +1,58 @@
+/* БЭМ блок app-modal */
+.app-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1055;
+  padding: 1.5rem;
+}
+
+.app-modal {
+  background: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  width: 100%;
+  max-width: 900px;
+}
+
+.app-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  cursor: move;
+}
+
+.app-modal__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.app-modal__body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+.app-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}

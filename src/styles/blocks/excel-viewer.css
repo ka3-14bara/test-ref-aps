@@ -1,0 +1,40 @@
+/* БЭМ: Блок app-excel-viewer */
+.app-excel-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-excel-viewer__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.app-excel-viewer__content {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 1rem;
+  background-color: #ffffff;
+}
+
+#excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+#excel-table td,
+#excel-table th {
+  border: 1px solid #dee2e6;
+  padding: 0.35rem 0.6rem;
+  white-space: nowrap;
+}
+
+#excel-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}

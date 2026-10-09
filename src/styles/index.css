@@ -1,0 +1,20 @@
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+@import "./blocks/table.css";
+@import "./blocks/modal.css";
+@import "./blocks/search-panel.css";
+@import "./blocks/excel-viewer.css";
+@import "./app.css";
+
+/* Базовый сброс */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}

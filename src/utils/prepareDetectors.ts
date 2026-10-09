@@ -1,21 +1,21 @@
-import { SelectedDetector } from "../components/createPages/AddTypes";
+import { SelectedDetector } from "../types/creation";
 
-/**
- * Подготавливает массив датчиков для отправки на сервер:
- * - убирает строки без выбранного датчика
- * - исключает записи с неположительным количеством
- * - возвращает только необходимые поля
- */
-export const prepareDetectorsPayload = (
+export interface DetectorPayload {
+  detectorId: number;
+  quantity: number;
+}
+
+export function prepareDetectorsPayload(
   detectors: SelectedDetector[],
-): { detectorId: number; quantity: number }[] => {
+): DetectorPayload[] {
   return detectors
     .filter(
-      (d): d is SelectedDetector & { detector: { id: number } } =>
-        d.detector != null && d.detector.id != null && d.quantity > 0,
+      (item) => item.detector && item.detector.id != null && item.quantity > 0,
     )
-    .map((d) => ({
-      detectorId: d.detector.id,
-      quantity: d.quantity,
+    .map((item) => ({
+      detectorId: item.detector!.id!,
+      quantity: item.quantity,
     }));
-};
+}
+
+export default prepareDetectorsPayload;

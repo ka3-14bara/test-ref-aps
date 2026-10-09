@@ -1,0 +1,19 @@
+/* БЭМ: Блок app-search-panel */
+.app-search-panel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.app-search-panel__input-group {
+  position: relative;
+  min-width: 260px;
+}
+
+.app-search-panel__select {
+  max-width: 200px;
+}
+
+.app-search-panel__switch {
+  white-space: nowrap;
+}
