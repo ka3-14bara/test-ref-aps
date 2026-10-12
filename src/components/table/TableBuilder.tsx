@@ -422,8 +422,8 @@ export const TableBuilder = ({
   const isTableReady = Boolean(tableInstance);
 
   return (
-    <div className="container-fluid">
-      <div style={{ height: "calc(85vh - 25px)" }}>
+    <div className="container-fluid d-flex flex-column h-100 px-3 pb-2 pt-1 overflow-hidden">
+      <div className="d-flex flex-column flex-grow-1 overflow-hidden">
         {isTableReady && (
           <>
             <TableControls<DataRow>

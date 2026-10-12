@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { axiosInstance } from "../../../api/client";
 import SearchableInput from "../../../components/common/SearchableInput";
-import { WorkTypes, WorkType, Code } from "../../../types/creation";
+import { WorkTypes, WorkType } from "../../../types/creation";
 
 interface WorkTypesFormProps {
   onChange: (data: WorkTypes[]) => void;

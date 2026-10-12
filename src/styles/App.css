@@ -1,50 +1,94 @@
-/* Стили приложения с соблюдением дизайн-системы */
 :root {
   --app-primary-yellow: #ffd369;
   --app-primary-yellow-hover: #e5bd55;
   --app-border-color: #dee2e6;
 }
 
-body {
+html,
+body,
+#root {
+  height: 100vh;
+  width: 100vw;
   margin: 0;
+  padding: 0;
+  overflow: hidden; /* Окно браузера всегда статично */
+  background-color: #f8f9fa;
+  color: #212529;
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;
-  background-color: #f8f9fa;
-  color: #212529;
 }
 
-/* Переопределения кнопок для фирменного желтого акцента */
-.btn-warning-custom {
-  background-color: var(--app-primary-yellow);
-  border-color: var(--app-primary-yellow-hover);
-  color: #000;
-  font-weight: 600;
+/* Контейнер всего экрана (Navigation + Контент) */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
-.btn-warning-custom:hover,
-.btn-warning-custom:focus {
-  background-color: var(--app-primary-yellow-hover);
-  border-color: #caa545;
-  color: #000;
+.app-layout__content {
+  flex: 1 1 auto;
+  min-height: 0; /* Обязательно для правильной работы вложенных flex-контейнеров */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Устранение обрезания контента при фиксации высоты таблиц на ПК/ноутбуках */
-.app-table-wrapper {
-  scrollbar-width: thin;
-  scrollbar-color: #adb5bd #f8f9fa;
+/* Обертка таблицы со скроллом */
+.table-container-gen {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
-.app-table-wrapper::-webkit-scrollbar {
+.table-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--app-border-color);
+  background: #ffffff;
+  border-radius: 0.25rem;
+}
+
+.table-body-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: auto; /* Скроллится только сама таблица внутри */
+  position: relative;
+}
+
+/* Фирменная стилизация полосы прокрутки внутри таблицы */
+.table-body-container::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-.app-table-wrapper::-webkit-scrollbar-track {
-  background: #f8f9fa;
+.table-body-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
 }
 
-.app-table-wrapper::-webkit-scrollbar-thumb {
-  background-color: #adb5bd;
+.table-body-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
   border-radius: 4px;
+}
+
+.table-body-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Сама таблица */
+.table-el {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 0;
 }

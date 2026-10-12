@@ -204,7 +204,8 @@ export const BaseTable = forwardRef(
         {showColumnVisibilityControl && (
           <ColumnVisibilityControl table={table} />
         )}
-        <div style={{ position: "relative" }}>
+        <div className="position-relative flex-grow-1 overflow-hidden d-flex flex-column min-vh-0">
+          {/* Лоадер */}
           {isLoading && (
             <div
               style={{
@@ -250,12 +251,14 @@ export const BaseTable = forwardRef(
             </TableWrapper>
           )}
         </div>
-        <PaginationPanel
-          pagination={pagination}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-          isLoading={isLoading}
-        />
+        <div className="flex-shrink-0">
+          <PaginationPanel
+            pagination={pagination}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
     );
   },
