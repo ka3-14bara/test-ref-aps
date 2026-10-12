@@ -2,7 +2,7 @@ import { axiosInstance, useAxiosInterceptor } from "../../api/client";
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { BaseTable, TableInstanceRef } from "./BaseTable";
 import { Header, PaginationInfo, SortDirection } from "../../types/table";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { TableControls } from "./TableControls";
 import { ActionModal } from "../modals/ActionModal";
 import { RowSelectionState, Table } from "@tanstack/react-table";
@@ -51,35 +51,49 @@ export const TableBuilder = ({
   notShowedEdit = [],
   draftPage = "",
 }: RequestCustom) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  useAxiosInterceptor();
+
+  // Инициализация состояний из URL Query параметров
+  const initialPage = parseInt(searchParams.get("page") || "0", 10);
+  const initialSize = parseInt(searchParams.get("size") || "10", 10);
+  const initialSort = searchParams.get("sort") || "";
+  const initialDirection = (searchParams.get("dir") as SortDirection) || "none";
+  const initialSearch = searchParams.get("search") || "";
+  const initialColumn = searchParams.get("col") || "all";
+  const initialDeleted = searchParams.get("deleted") === "true";
+  const initialServerSearch = searchParams.get("serverSearch") !== "false";
+
   const [tableData, setTableData] = useState<DataRow[]>([]);
   const [tableHeaders, setTableHeaders] = useState<Header[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
   const [pagination, setPagination] = useState<PaginationInfo>({
-    page: 0,
-    size: 10,
+    page: initialPage,
+    size: initialSize,
     totalElements: 0,
     totalPages: 0,
   });
-  const [sort, setSort] = useState<string | null>("");
-  const [direction, setDirection] = useState<SortDirection>("none");
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [isDeleted, setIsDeleted] = useState<boolean>(false);
+
+  const [sort, setSort] = useState<string | null>(initialSort);
+  const [direction, setDirection] = useState<SortDirection>(initialDirection);
+  const [searchTerm, setSearchTerm] = useState<string>(initialSearch);
+  const [selectedColumn, setSelectedColumn] = useState<string>(initialColumn);
+  const [isDeleted, setIsDeleted] = useState<boolean>(initialDeleted);
+  const [isServerSearch, setIsServerSearch] =
+    useState<boolean>(initialServerSearch);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState<DataRow[]>([]);
-  const [isServerSearch, setIsServerSearch] = useState(true);
-  const location = useLocation();
-
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >({});
 
-  const navigate = useNavigate();
-  useAxiosInterceptor();
-
   const viewer = useDocumentViewer();
-
   const [tableInstance, setTableInstance] = useState<Table<DataRow> | null>(
     null,
   );
@@ -88,11 +102,37 @@ export const TableBuilder = ({
     {},
   );
 
+  // Синхронизация состояния таблицы в Query параметры URL
+  const updateUrlParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          Object.entries(updates).forEach(([key, val]) => {
+            if (
+              val === null ||
+              val === "" ||
+              val === "false" ||
+              val === "none"
+            ) {
+              next.delete(key);
+            } else {
+              next.set(key, val);
+            }
+          });
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  // Скрытие датчиков с нулевыми значениями
   useEffect(() => {
     if (!tableData.length || !tableHeaders.length) return;
 
     const newVisibility: Record<string, boolean> = {};
-
     tableHeaders.forEach((header) => {
       if (header.key?.startsWith("detectorsValue.detector_")) {
         const getNestedValue = (obj: any, path: string) =>
@@ -115,22 +155,32 @@ export const TableBuilder = ({
     }
   }, [tableData, tableHeaders]);
 
+  // Загрузка данных таблицы
   const fetchData = useCallback(
     async (params: PaginationParams) => {
       const currentReq = req;
       try {
         setLoading(true);
         const isToSort = params.direction && params.direction !== "none";
+
+        // Формируем чистый объект query параметров без лишнего globalSearch
+        const queryParams: Record<string, any> = {
+          page: params.page,
+          size: params.size,
+          sort: isToSort ? params.sort : undefined,
+          direction: isToSort ? params.direction : undefined,
+          includeDeleted: params.deleted ? true : undefined,
+        };
+
+        // globalSearch добавляется СТРОГО при активном серверном поиске и наличии строки
+        if (params.globalSearch && params.globalSearch.trim() !== "") {
+          queryParams.globalSearch = params.globalSearch.trim();
+        }
+
         const response = await axiosInstance.get<ApiResponse>(`${req}`, {
-          params: {
-            page: params.page,
-            size: params.size,
-            sort: isToSort ? params.sort : undefined,
-            direction: isToSort ? params.direction : undefined,
-            includeDeleted: params.deleted,
-            globalSearch: params.globalSearch,
-          },
+          params: queryParams,
         });
+
         if (currentReq !== req) return;
         setTableData(response.data.content);
         setPagination((prev) => {
@@ -153,10 +203,8 @@ export const TableBuilder = ({
         console.error(err);
         setError("Ошибка при загрузке данных: " + err);
       } finally {
-        if (currentReq === req) {
-          if (tableHeaders.length > 0) {
-            setLoading(false);
-          }
+        if (currentReq === req && tableHeaders.length > 0) {
+          setLoading(false);
         }
       }
     },
@@ -165,6 +213,7 @@ export const TableBuilder = ({
 
   const memoizedHeaders = useMemo(() => tableHeaders, [tableHeaders]);
 
+  // Загрузка заголовков
   useEffect(() => {
     let isCurrent = true;
 
@@ -180,7 +229,7 @@ export const TableBuilder = ({
       } catch (err) {
         if (isCurrent) {
           console.error(err);
-          setError("Ошибка при загрузке данных: " + err);
+          setError("Ошибка при загрузке заголовков: " + err);
           setLoading(false);
         }
       }
@@ -195,15 +244,17 @@ export const TableBuilder = ({
     };
   }, [location.pathname, req]);
 
+  // Загрузка строк таблицы
   useEffect(() => {
     if (tableHeaders.length === 0) return;
+
     fetchData({
       page: pagination.page,
       size: pagination.size,
       sort: sort && direction ? `${sort},${direction}` : undefined,
-      direction: direction,
+      direction,
       deleted: isDeleted,
-      globalSearch: searchTerm,
+      globalSearch: isServerSearch ? searchTerm : undefined,
     });
   }, [
     pagination.page,
@@ -213,14 +264,18 @@ export const TableBuilder = ({
     tableHeaders,
     fetchData,
     isDeleted,
+    isServerSearch,
+    searchTerm,
   ]);
 
   const handlePageChange = (page: number) => {
     setPagination((prev) => ({ ...prev, page }));
+    updateUrlParams({ page: page > 0 ? page.toString() : null });
   };
 
   const handlePageSizeChange = (size: number) => {
     setPagination((prev) => ({ ...prev, size, page: 0 }));
+    updateUrlParams({ size: size !== 10 ? size.toString() : null, page: null });
   };
 
   const handleSort = useCallback(
@@ -231,26 +286,64 @@ export const TableBuilder = ({
         desc: "none",
       };
 
-      setDirection((d) => (columnKey !== sort ? "asc" : nextStep[d] || "asc"));
-      setSort(columnKey);
+      const newDirection =
+        columnKey !== sort ? "asc" : nextStep[direction] || "asc";
+      const newSort = newDirection === "none" ? "" : columnKey;
+
+      setDirection(newDirection);
+      setSort(newSort);
       setPagination((prev) => ({ ...prev, page: 0 }));
+
+      updateUrlParams({
+        sort: newSort || null,
+        dir: newDirection !== "none" ? newDirection : null,
+        page: null,
+      });
     },
-    [sort],
+    [sort, direction, updateUrlParams],
   );
 
   const handleDeleted = (state: boolean) => {
     setIsDeleted(state);
+    setPagination((prev) => ({ ...prev, page: 0 }));
+    updateUrlParams({ deleted: state ? "true" : null, page: null });
   };
 
-  const handleSearch = useCallback((term: string) => {
-    setSearchTerm(term);
-  }, []);
+  const handleSearch = useCallback(
+    (term: string) => {
+      setSearchTerm(term);
+      if (!isServerSearch) {
+        updateUrlParams({ search: term || null });
+      }
+    },
+    [isServerSearch, updateUrlParams],
+  );
+
+  const handleColumnChange = useCallback(
+    (col: string) => {
+      setSelectedColumn(col);
+      updateUrlParams({ col: col !== "all" ? col : null });
+    },
+    [updateUrlParams],
+  );
+
+  const handleToggleServerSearch = useCallback(() => {
+    setIsServerSearch((prev) => {
+      const next = !prev;
+      updateUrlParams({
+        serverSearch: next ? null : "false",
+        col: next ? null : selectedColumn !== "all" ? selectedColumn : null,
+      });
+      return next;
+    });
+  }, [updateUrlParams, selectedColumn]);
 
   const handleServerSearchSubmit = useCallback(
     (term?: string) => {
       if (isServerSearch) {
         const searchValue = typeof term === "string" ? term : searchTerm;
         setPagination((prev) => ({ ...prev, page: 0 }));
+        updateUrlParams({ search: searchValue || null, page: null });
         fetchData({
           page: 0,
           size: pagination.size,
@@ -258,24 +351,17 @@ export const TableBuilder = ({
           deleted: isDeleted,
           globalSearch: searchValue,
         });
-      } else {
-        fetchData({
-          page: 0,
-          size: pagination.size,
-          sort: sort && direction ? `${sort},${direction}` : undefined,
-          deleted: isDeleted,
-          globalSearch: "",
-        });
       }
     },
     [
       isServerSearch,
-      fetchData,
+      searchTerm,
       pagination.size,
       sort,
       direction,
       isDeleted,
-      searchTerm,
+      fetchData,
+      updateUrlParams,
     ],
   );
 
@@ -328,8 +414,17 @@ export const TableBuilder = ({
       size: pagination.size,
       sort: sort && direction ? `${sort},${direction}` : undefined,
       deleted: isDeleted,
+      globalSearch: isServerSearch ? searchTerm : undefined,
     });
-  }, [fetchData, pagination, sort, direction, isDeleted]);
+  }, [
+    fetchData,
+    pagination,
+    sort,
+    direction,
+    isDeleted,
+    isServerSearch,
+    searchTerm,
+  ]);
 
   const handleStatusChange = useCallback(async () => {
     if (selectedRows.length !== 1) return;
@@ -444,8 +539,10 @@ export const TableBuilder = ({
               handleDownload={handleDownloadDocument}
               handleOpenViewerClick={handleOpenViewerClick}
               isServerSearch={isServerSearch}
-              toggleServerSearch={() => setIsServerSearch((prev) => !prev)}
+              toggleServerSearch={handleToggleServerSearch}
               onSearchSubmit={handleServerSearchSubmit}
+              selectedColumn={selectedColumn}
+              onColumnChange={handleColumnChange}
             />
             <ActionModal<DataRow>
               isOpen={isModalOpen}
@@ -493,6 +590,7 @@ export const TableBuilder = ({
           direction={direction}
           isLoading={loading}
           isServerSearch={isServerSearch}
+          selectedColumn={selectedColumn}
         />
       </div>
     </div>

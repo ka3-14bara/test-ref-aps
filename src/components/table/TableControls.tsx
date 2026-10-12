@@ -2,6 +2,13 @@ import { SearchPanel } from "../common/SearchPanel";
 import { TableControlsProps } from "../../types/table";
 import { useNavigate, useLocation } from "react-router-dom";
 
+interface ExtendedControlsProps<
+  T extends Record<string, any>,
+> extends TableControlsProps<T> {
+  selectedColumn?: string;
+  onColumnChange?: (col: string) => void;
+}
+
 export const TableControls = <T extends Record<string, any>>({
   searchTerm,
   onSearch,
@@ -21,7 +28,9 @@ export const TableControls = <T extends Record<string, any>>({
   toggleServerSearch,
   onSearchSubmit,
   handleOpenViewerClick,
-}: TableControlsProps<T>) => {
+  selectedColumn = "all",
+  onColumnChange,
+}: ExtendedControlsProps<T>) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -49,6 +58,8 @@ export const TableControls = <T extends Record<string, any>>({
             isServerSearch={isServerSearch}
             onSearchSubmit={onSearchSubmit}
             toggleServerSearch={toggleServerSearch}
+            selectedColumn={selectedColumn}
+            onColumnChange={onColumnChange}
           />
           <div className="flex gap-4">
             <button

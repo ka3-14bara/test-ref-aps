@@ -1,7 +1,6 @@
 import React, {
   useMemo,
   useState,
-  useEffect,
   useRef,
   useImperativeHandle,
   forwardRef,
@@ -26,6 +25,12 @@ import { ColumnVisibilityControl } from "./ColumnVisibilityControl";
 
 export type TableInstanceRef<T extends Record<string, any>> = Table<T> | null;
 
+interface BaseTablePropsWithSelectedCol<
+  T extends Record<string, any>,
+> extends ExtendedTableProps<T> {
+  selectedColumn?: string;
+}
+
 export const BaseTable = forwardRef(
   <T extends Record<string, any>>(
     {
@@ -45,12 +50,12 @@ export const BaseTable = forwardRef(
       direction,
       isLoading,
       isServerSearch,
-    }: ExtendedTableProps<T>,
+      selectedColumn = "all",
+    }: BaseTablePropsWithSelectedCol<T>,
     ref: React.Ref<TableInstanceRef<T>>,
   ) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const tableContainerRef = useRef<HTMLDivElement>(null);
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
     const prepareDataWithDeletedState = useMemo(() => {
       return data.map((item: any) => ({
@@ -67,12 +72,12 @@ export const BaseTable = forwardRef(
         if (!key.includes("."))
           return {
             accessorKey: key,
-            filterFn: "includesString",
+            filterFn: "includesString" as const,
           };
         return {
           accessorFn: (row: any) =>
             key.split(".").reduce((acc, k) => acc?.[k], row) ?? "",
-          filterFn: "includesString",
+          filterFn: "includesString" as const,
         };
       };
 
@@ -140,22 +145,31 @@ export const BaseTable = forwardRef(
       return [selectionColumn, ...dynamicColumns];
     }, [headers]);
 
+    // Формируем фильтры колонок для локального поиска
+    const columnFilters = useMemo<ColumnFiltersState>(() => {
+      if (isServerSearch || !searchTerm || selectedColumn === "all") {
+        return [];
+      }
+      // Ищем дочерний идентификатор столбца или прямой ключ
+      return [{ id: `${selectedColumn}_child`, value: searchTerm }];
+    }, [isServerSearch, searchTerm, selectedColumn]);
+
     const table = useReactTable({
       data: prepareDataWithDeletedState,
       columns,
       onSortingChange: setSorting,
       getRowId: (row: any) => row.id || row.uuid,
-      onColumnVisibilityChange: onColumnVisibilityChange,
+      onColumnVisibilityChange,
       enableHiding: true,
       columnResizeMode: "onChange",
-      onColumnFiltersChange: setColumnFilters,
       getFilteredRowModel: getFilteredRowModel(),
       getCoreRowModel: getCoreRowModel(),
-      onRowSelectionChange: onRowSelectionChange,
+      onRowSelectionChange,
       state: {
         sorting,
         columnVisibility,
-        globalFilter: isServerSearch ? undefined : searchTerm,
+        globalFilter:
+          !isServerSearch && selectedColumn === "all" ? searchTerm : undefined,
         rowSelection,
         columnFilters,
       },
@@ -184,19 +198,6 @@ export const BaseTable = forwardRef(
       [table],
     );
 
-    useEffect(() => {
-      const updateTableHeight = () => {
-        if (tableContainerRef.current) {
-          tableContainerRef.current.style.height = "67vh";
-        }
-      };
-      updateTableHeight();
-      window.addEventListener("resize", updateTableHeight);
-      return () => {
-        window.removeEventListener("resize", updateTableHeight);
-      };
-    }, []);
-
     const isTableEmptyAndLoading = isLoading && rows.length === 0;
 
     return (
@@ -205,7 +206,6 @@ export const BaseTable = forwardRef(
           <ColumnVisibilityControl table={table} />
         )}
         <div className="position-relative flex-grow-1 overflow-hidden d-flex flex-column min-vh-0">
-          {/* Лоадер */}
           {isLoading && (
             <div
               style={{
@@ -263,7 +263,9 @@ export const BaseTable = forwardRef(
     );
   },
 ) as <T extends Record<string, any>>(
-  props: ExtendedTableProps<T> & { ref?: React.Ref<TableInstanceRef<T>> },
+  props: BaseTablePropsWithSelectedCol<T> & {
+    ref?: React.Ref<TableInstanceRef<T>>;
+  },
 ) => React.ReactElement;
 
 export default BaseTable;

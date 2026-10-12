@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Header } from "../../types/table";
 
 interface SearchPanelProps {
@@ -7,7 +7,9 @@ interface SearchPanelProps {
   headers: Header[];
   isServerSearch?: boolean;
   toggleServerSearch?: () => void;
-  onSearchSubmit?: (field: string, term: string) => void;
+  onSearchSubmit?: (term?: string) => void;
+  selectedColumn?: string;
+  onColumnChange?: (columnKey: string) => void;
 }
 
 export const SearchPanel: React.FC<SearchPanelProps> = ({
@@ -17,9 +19,14 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   isServerSearch = false,
   toggleServerSearch,
   onSearchSubmit,
+  selectedColumn = "all",
+  onColumnChange,
 }) => {
-  const [selectedField, setSelectedField] = useState<string>("all");
   const [localTerm, setLocalTerm] = useState<string>(searchTerm);
+
+  useEffect(() => {
+    setLocalTerm(searchTerm);
+  }, [searchTerm]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -29,20 +36,34 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && onSearchSubmit) {
-      onSearchSubmit(selectedField, localTerm);
+      onSearchSubmit(localTerm);
+    }
+  };
+
+  const handleClear = () => {
+    setLocalTerm("");
+    onSearch("");
+    if (isServerSearch && onSearchSubmit) {
+      onSearchSubmit("");
     }
   };
 
   return (
     <div className="d-flex align-items-center gap-2">
-      <div className="input-group">
+      <div className="input-group" style={{ minWidth: "260px" }}>
         <span className="input-group-text bg-white border-end-0">
           <i className="bi bi-search text-muted"></i>
         </span>
         <input
           type="text"
           className="form-control border-start-0"
-          placeholder="Поиск по таблице..."
+          placeholder={
+            isServerSearch
+              ? "Серверный поиск (Enter)..."
+              : selectedColumn === "all"
+                ? "Локальный поиск по всем колонкам..."
+                : "Поиск по выбранному столбцу..."
+          }
           value={localTerm}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
@@ -51,20 +72,25 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
           <button
             className="btn btn-outline-secondary border-start-0"
             type="button"
-            onClick={() => {
-              setLocalTerm("");
-              onSearch("");
-            }}
+            onClick={handleClear}
+            title="Очистить"
           >
             <i className="bi bi-x"></i>
           </button>
         )}
       </div>
 
+      {/* Селектор доступен строго при локальном поиске */}
       <select
         className="form-select w-auto"
-        value={selectedField}
-        onChange={(e) => setSelectedField(e.target.value)}
+        value={isServerSearch ? "all" : selectedColumn}
+        disabled={isServerSearch}
+        title={
+          isServerSearch
+            ? "Выбор конкретного столбца доступен только при локальном поиске"
+            : undefined
+        }
+        onChange={(e) => onColumnChange && onColumnChange(e.target.value)}
       >
         <option value="all">Все столбцы</option>
         {headers
