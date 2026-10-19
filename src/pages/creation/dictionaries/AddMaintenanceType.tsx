@@ -138,7 +138,10 @@ export const AddMaintenanceType: React.FC<AddMaintenanceTypeProps> = ({
   };
 
   return (
-    <div className="container mt-2">
+    <div
+      className="container-fluid mt-2 d-flex flex-column flex-grow-1"
+      style={{ minHeight: 0, width: "80%" }}
+    >
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
           <li className="breadcrumb-item">
@@ -161,167 +164,172 @@ export const AddMaintenanceType: React.FC<AddMaintenanceTypeProps> = ({
         </div>
       )}
 
-      <div className="card shadow-sm border-0 p-4">
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label
-              htmlFor="mainWorkTypeTitle"
-              className="form-label fw-semibold"
-            >
-              Наименование вида работ <span className="text-danger">*</span>
-            </label>
-            <input
-              type="text"
-              id="mainWorkTypeTitle"
-              className={`form-control ${!formData.title ? "is-invalid" : ""}`}
-              value={formData.title}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, title: e.target.value }))
-              }
-              placeholder="Введите наименование..."
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label
-              htmlFor="workTypeForSelect"
-              className="form-label fw-semibold"
-            >
-              Тип субъекта <span className="text-danger">*</span>
-            </label>
-            <select
-              id="workTypeForSelect"
-              className={`form-select ${!formData.workTypeFor ? "is-invalid" : ""}`}
-              value={formData.workTypeFor}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  workTypeFor: e.target.value,
-                }))
-              }
-              required
-            >
-              <option value="" disabled>
-                -- Выберите тип субъекта --
-              </option>
-              <option value="TRAIN">Шлейф</option>
-              <option value="STATION">Станция</option>
-            </select>
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label fw-semibold">
-              Коды регламентных работ и периодичность{" "}
-              <span className="text-danger">*</span>
-            </label>
-            <div
-              className="border rounded p-3 bg-light overflow-auto"
-              style={{ maxHeight: "300px" }}
-            >
-              {allCodes.map((codeItem) => {
-                const isChecked = Boolean(checkboxes[codeItem.title]);
-                const codeObj = formData.codes.find(
-                  (c) => c.codeId === codeItem.id,
-                );
-                return (
-                  <div
-                    key={codeItem.id}
-                    className="row g-2 align-items-center mb-2"
-                  >
-                    <div className="col-md-8">
-                      <div className="form-check">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id={`code-check-${codeItem.id}`}
-                          checked={isChecked}
-                          onChange={(e) =>
-                            handleCheckboxChange(
-                              codeItem.id,
-                              codeItem.title,
-                              e.target.checked,
-                            )
-                          }
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor={`code-check-${codeItem.id}`}
-                        >
-                          <strong>{codeItem.title}</strong> — {codeItem.comment}
-                        </label>
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="input-group input-group-sm">
-                        <span className="input-group-text">Периодичность:</span>
-                        <input
-                          type="number"
-                          min="1"
-                          className="form-control"
-                          disabled={!isChecked}
-                          value={codeObj?.periodicity ?? ""}
-                          onChange={(e) =>
-                            handlePeriodicityChange(
-                              codeItem.id,
-                              parseInt(e.target.value, 10) || 1,
-                            )
-                          }
-                          placeholder="в мес."
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="maintComment" className="form-label fw-semibold">
-              Комментарий
-            </label>
-            <textarea
-              id="maintComment"
-              className="form-control"
-              rows={3}
-              value={formData.comment ?? ""}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, comment: e.target.value }))
-              }
-              placeholder="Примечания..."
-            />
-          </div>
-
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex gap-2">
-              <button
-                type="submit"
-                className="btn btn-success px-4"
-                disabled={loading}
+      <div className="px-3 pb-2 pt-1 flex-grow-1 position-relative">
+        <div className="position-absolute top-0 bottom-0 start-0 end-0 overflow-auto p-3">
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label
+                htmlFor="mainWorkTypeTitle"
+                className="form-label fw-semibold"
               >
-                {loading ? (
-                  <span className="spinner-border spinner-border-sm me-2"></span>
-                ) : null}
-                Сохранить
-              </button>
+                Наименование вида работ <span className="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                id="mainWorkTypeTitle"
+                className={`form-control ${!formData.title ? "is-invalid" : ""}`}
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, title: e.target.value }))
+                }
+                placeholder="Введите наименование..."
+                required
+              />
+            </div>
+
+            <div className="mb-3">
+              <label
+                htmlFor="workTypeForSelect"
+                className="form-label fw-semibold"
+              >
+                Тип субъекта <span className="text-danger">*</span>
+              </label>
+              <select
+                id="workTypeForSelect"
+                className={`form-select ${!formData.workTypeFor ? "is-invalid" : ""}`}
+                value={formData.workTypeFor}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    workTypeFor: e.target.value,
+                  }))
+                }
+                required
+              >
+                <option value="" disabled>
+                  -- Выберите тип субъекта --
+                </option>
+                <option value="TRAIN">Шлейф</option>
+                <option value="STATION">Станция</option>
+              </select>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label fw-semibold">
+                Коды регламентных работ и периодичность{" "}
+                <span className="text-danger">*</span>
+              </label>
+              <div
+                className="border rounded p-3 bg-light overflow-auto"
+                style={{ maxHeight: "300px" }}
+              >
+                {allCodes.map((codeItem) => {
+                  const isChecked = Boolean(checkboxes[codeItem.title]);
+                  const codeObj = formData.codes.find(
+                    (c) => c.codeId === codeItem.id,
+                  );
+                  return (
+                    <div
+                      key={codeItem.id}
+                      className="row g-2 align-items-center mb-2"
+                    >
+                      <div className="col-md-8">
+                        <div className="form-check">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id={`code-check-${codeItem.id}`}
+                            checked={isChecked}
+                            onChange={(e) =>
+                              handleCheckboxChange(
+                                codeItem.id,
+                                codeItem.title,
+                                e.target.checked,
+                              )
+                            }
+                          />
+                          <label
+                            className="form-check-label"
+                            htmlFor={`code-check-${codeItem.id}`}
+                          >
+                            <strong>{codeItem.title}</strong> —{" "}
+                            {codeItem.comment}
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-md-4">
+                        <div className="input-group input-group-sm">
+                          <span className="input-group-text">
+                            Периодичность:
+                          </span>
+                          <input
+                            type="number"
+                            min="1"
+                            className="form-control"
+                            disabled={!isChecked}
+                            value={codeObj?.periodicity ?? ""}
+                            onChange={(e) =>
+                              handlePeriodicityChange(
+                                codeItem.id,
+                                parseInt(e.target.value, 10) || 1,
+                              )
+                            }
+                            placeholder="в мес."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="maintComment" className="form-label fw-semibold">
+                Комментарий
+              </label>
+              <textarea
+                id="maintComment"
+                className="form-control"
+                rows={3}
+                value={formData.comment ?? ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, comment: e.target.value }))
+                }
+                placeholder="Примечания..."
+              />
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center">
+              <div className="d-flex gap-2">
+                <button
+                  type="submit"
+                  className="btn btn-success px-4"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="spinner-border spinner-border-sm me-2"></span>
+                  ) : null}
+                  Сохранить
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-warning"
+                  onClick={handleReset}
+                >
+                  Сбросить
+                </button>
+              </div>
               <button
                 type="button"
-                className="btn btn-outline-warning"
-                onClick={handleReset}
+                className="btn btn-secondary px-4"
+                onClick={() => navigate(endPoint)}
               >
-                Сбросить
+                Назад
               </button>
             </div>
-            <button
-              type="button"
-              className="btn btn-secondary px-4"
-              onClick={() => navigate(endPoint)}
-            >
-              Назад
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

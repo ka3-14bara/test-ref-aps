@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { useNavigate } from "react-router-dom";
 
 export const axiosInstance = axios.create({
-  baseURL: "https://.org:8443/api/",
+  baseURL: "/api/",
   timeout: 150000,
   headers: {
     "Content-Type": "application/json",
@@ -12,7 +12,7 @@ export const axiosInstance = axios.create({
 });
 
 export const refreshInstance = axios.create({
-  baseURL: "https://.org:8443/api/",
+  baseURL: "/api/",
   headers: {
     "Content-Type": "application/json",
     "x-kl-kes-ajax-request": "Ajax_Request",

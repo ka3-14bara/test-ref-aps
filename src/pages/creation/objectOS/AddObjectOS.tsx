@@ -76,17 +76,29 @@ export const AddObjectOS: React.FC<{ endPoint: string }> = ({ endPoint }) => {
     if (draftRaw) {
       try {
         const parsed = JSON.parse(draftRaw);
-        setFormData(parsed.formData);
-        if (parsed.selectedDetectors) {
+        if (parsed.formData) {
+          setFormData(parsed.formData);
+          // Синхронизируем ключ формы, чтобы useFormState не возвращал старые данные
+          localStorage.setItem(
+            "objectOSFormData",
+            JSON.stringify(parsed.formData),
+          );
+        }
+        if (Array.isArray(parsed.selectedDetectors)) {
           setSelectedDetectors(parsed.selectedDetectors);
         }
-        window.sessionStorage.setItem("current_draft_id", parsed.id.toString());
+        if (parsed.id) {
+          window.sessionStorage.setItem(
+            "current_draft_id",
+            parsed.id.toString(),
+          );
+        }
         localStorage.removeItem("temp_load_draft");
       } catch (e) {
-        console.error("Ошибка чтения черновика:", e);
+        console.error("Ошибка чтения черновика ОС:", e);
       }
     }
-  }, [setFormData]);
+  }, [setFormData, setSelectedDetectors]);
 
   const handleSaveAsDraft = () => {
     const currentDrafts = JSON.parse(
@@ -193,7 +205,10 @@ export const AddObjectOS: React.FC<{ endPoint: string }> = ({ endPoint }) => {
   };
 
   return (
-    <div className="container mt-2">
+    <div
+      className="container-fluid mt-2 d-flex flex-column flex-grow-1"
+      style={{ minHeight: 0, width: "80%" }}
+    >
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
           <li className="breadcrumb-item">
@@ -240,46 +255,52 @@ export const AddObjectOS: React.FC<{ endPoint: string }> = ({ endPoint }) => {
         </div>
       </div>
 
-      {isMassCreationMode ? (
-        <MassCreationManagerObjectOS
-          key={massCreationKey}
-          initialFormData={formData}
-          initialDetectors={selectedDetectors}
-          onSubmit={handleSubmitMass}
-          onReset={() => {
-            resetForm();
-            setSelectedDetectors([]);
-          }}
-          loading={loading}
-        />
-      ) : (
-        <ObjectOSForm
-          key={regularCreationKey}
-          formData={formData}
-          setFormData={setFormData}
-          selectedDetectors={selectedDetectors}
-          setSelectedDetectors={setSelectedDetectors}
-          onSubmit={handleSubmitRegular}
-          onReset={() => {
-            resetForm();
-            setSelectedDetectors([]);
-          }}
-          onSaveAsDraft={handleSaveAsDraft}
-          onBack={() => navigate("/subjects")}
-          loading={loading}
-          error={error}
-          isCreateModalOpenTeam={isCreateModalOpenTeam}
-          setIsCreateModalOpenTeam={setIsCreateModalOpenTeam}
-          isCreateModalOpenOrg={isCreateModalOpenOrg}
-          setIsCreateModalOpenOrg={setIsCreateModalOpenOrg}
-          isCreateModalOpenExecDoc={isCreateModalOpenExecDoc}
-          setIsCreateModalOpenExecDoc={setIsCreateModalOpenExecDoc}
-          isCreateModalOpenProjectDoc={isCreateModalOpenProjectDoc}
-          setIsCreateModalOpenProjectDoc={setIsCreateModalOpenProjectDoc}
-          isCreateModalOpenComissionDoc={isCreateModalOpenComissionDoc}
-          setIsCreateModalOpenComissionDoc={setIsCreateModalOpenComissionDoc}
-        />
-      )}
+      <div className="px-3 pb-2 pt-1 flex-grow-1 position-relative">
+        <div className="position-absolute top-0 bottom-0 start-0 end-0 overflow-auto p-3">
+          {isMassCreationMode ? (
+            <MassCreationManagerObjectOS
+              key={massCreationKey}
+              initialFormData={formData}
+              initialDetectors={selectedDetectors}
+              onSubmit={handleSubmitMass}
+              onReset={() => {
+                resetForm();
+                setSelectedDetectors([]);
+              }}
+              loading={loading}
+            />
+          ) : (
+            <ObjectOSForm
+              key={regularCreationKey}
+              formData={formData}
+              setFormData={setFormData}
+              selectedDetectors={selectedDetectors}
+              setSelectedDetectors={setSelectedDetectors}
+              onSubmit={handleSubmitRegular}
+              onReset={() => {
+                resetForm();
+                setSelectedDetectors([]);
+              }}
+              onSaveAsDraft={handleSaveAsDraft}
+              onBack={() => navigate("/subjects")}
+              loading={loading}
+              error={error}
+              isCreateModalOpenTeam={isCreateModalOpenTeam}
+              setIsCreateModalOpenTeam={setIsCreateModalOpenTeam}
+              isCreateModalOpenOrg={isCreateModalOpenOrg}
+              setIsCreateModalOpenOrg={setIsCreateModalOpenOrg}
+              isCreateModalOpenExecDoc={isCreateModalOpenExecDoc}
+              setIsCreateModalOpenExecDoc={setIsCreateModalOpenExecDoc}
+              isCreateModalOpenProjectDoc={isCreateModalOpenProjectDoc}
+              setIsCreateModalOpenProjectDoc={setIsCreateModalOpenProjectDoc}
+              isCreateModalOpenComissionDoc={isCreateModalOpenComissionDoc}
+              setIsCreateModalOpenComissionDoc={
+                setIsCreateModalOpenComissionDoc
+              }
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

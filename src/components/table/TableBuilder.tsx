@@ -2,7 +2,7 @@ import { axiosInstance, useAxiosInterceptor } from "../../api/client";
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { BaseTable, TableInstanceRef } from "./BaseTable";
 import { Header, PaginationInfo, SortDirection } from "../../types/table";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { TableControls } from "./TableControls";
 import { ActionModal } from "../modals/ActionModal";
 import { RowSelectionState, Table } from "@tanstack/react-table";
@@ -53,7 +53,6 @@ export const TableBuilder = ({
 }: RequestCustom) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const location = useLocation();
   useAxiosInterceptor();
 
   // Инициализация состояний из URL Query параметров
@@ -214,22 +213,23 @@ export const TableBuilder = ({
   const memoizedHeaders = useMemo(() => tableHeaders, [tableHeaders]);
 
   // Загрузка заголовков
+  // Загрузка заголовков
   useEffect(() => {
     let isCurrent = true;
+    setLoading(true);
 
     const loadInitialSetup = async () => {
-      setLoading(true);
       try {
         const headersResponse = await axiosInstance.get<Header[]>(
           `${req}/headers`,
         );
         if (isCurrent) {
-          setTableHeaders(headersResponse.data);
+          setTableHeaders(headersResponse.data || []);
         }
       } catch (err) {
         if (isCurrent) {
-          console.error(err);
-          setError("Ошибка при загрузке заголовков: " + err);
+          console.error("Ошибка при загрузке заголовков:", err);
+          setError("Ошибка при загрузке структуры таблицы: " + err);
           setLoading(false);
         }
       }
@@ -239,10 +239,11 @@ export const TableBuilder = ({
 
     return () => {
       isCurrent = false;
+      // Сбрасываем данные при смене роута, чтобы не висели старые строки от предыдущей таблицы
       setTableData([]);
       setTableHeaders([]);
     };
-  }, [location.pathname, req]);
+  }, [req]); // Зависимость только от req (URL API)
 
   // Загрузка строк таблицы
   useEffect(() => {
@@ -492,19 +493,20 @@ export const TableBuilder = ({
     setIsModalOpen(true);
   }, [selectedRows.length]);
 
-  if (loading && tableData.length === 0) {
+  if (loading && tableHeaders.length === 0) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "85vh",
-          width: "100%",
-        }}
-      >
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Загрузка...</span>
+      <div className="d-flex justify-content-center align-items-center vh-100 w-100 bg-light">
+        <div className="text-center">
+          <div
+            className="spinner-border text-primary mb-3"
+            style={{ width: "3rem", height: "3rem" }}
+            role="status"
+          >
+            <span className="visually-hidden">Загрузка...</span>
+          </div>
+          <h6 className="text-muted fw-bold">
+            Инициализация таблицы {pageTitle}...
+          </h6>
         </div>
       </div>
     );
@@ -514,84 +516,98 @@ export const TableBuilder = ({
     return <div className="alert alert-danger m-3">{error}</div>;
   }
 
-  const isTableReady = Boolean(tableInstance);
-
   return (
     <div className="container-fluid d-flex flex-column h-100 px-3 pb-2 pt-1 overflow-hidden">
       <div className="d-flex flex-column flex-grow-1 overflow-hidden">
-        {isTableReady && (
-          <>
-            <TableControls<DataRow>
-              searchTerm={searchTerm}
-              onSearch={handleSearch}
-              headers={tableHeaders}
-              isShowAdd={isShowAdd}
-              pageName={pageTitle}
-              isShowDeleted={isDeleted}
-              onDelState={handleDeleted}
-              handleCreateNew={handleCreateNew}
-              selectedRows={selectedRows}
-              openActionModal={openActionModal}
-              handleStatusChange={handleStatusChange}
-              table={tableInstance!}
-              btnCreateNewText={createText}
-              drafts={draftPage}
-              handleDownload={handleDownloadDocument}
-              handleOpenViewerClick={handleOpenViewerClick}
-              isServerSearch={isServerSearch}
-              toggleServerSearch={handleToggleServerSearch}
-              onSearchSubmit={handleServerSearchSubmit}
-              selectedColumn={selectedColumn}
-              onColumnChange={handleColumnChange}
-            />
-            <ActionModal<DataRow>
-              isOpen={isModalOpen}
-              onClose={closeActionModal}
-              selectedItems={selectedRows}
-              headers={tableHeaders}
-              reqUrl={req}
-              onSuccess={handleRefreshData}
-              notShow={notShowedEdit}
-            />
-
-            <DocumentViewerModal
-              isOpen={isDocumentModalOpen}
-              onClose={handleCloseViewerModal}
-              fileUrl={viewer.fileUrl}
-              fileBuffer={viewer.fileBuffer}
-              fileType={viewer.fileType}
-              fileName={viewer.fileName}
-              isLoading={viewer.isLoading}
-              error={viewer.error}
-            />
-          </>
+        {/* Панель управления рендерится всегда при наличии заголовков (даже пока загружаются строки) */}
+        {tableHeaders.length > 0 && (
+          <TableControls<DataRow>
+            searchTerm={searchTerm}
+            onSearch={handleSearch}
+            headers={tableHeaders}
+            isShowAdd={isShowAdd}
+            pageName={pageTitle}
+            isShowDeleted={isDeleted}
+            onDelState={handleDeleted}
+            handleCreateNew={handleCreateNew}
+            selectedRows={selectedRows}
+            openActionModal={openActionModal}
+            handleStatusChange={handleStatusChange}
+            table={tableInstance!}
+            btnCreateNewText={createText}
+            drafts={draftPage}
+            handleDownload={handleDownloadDocument}
+            handleOpenViewerClick={handleOpenViewerClick}
+            isServerSearch={isServerSearch}
+            toggleServerSearch={handleToggleServerSearch}
+            onSearchSubmit={handleServerSearchSubmit}
+            selectedColumn={selectedColumn}
+            onColumnChange={handleColumnChange}
+          />
         )}
-        <BaseTable<DataRow>
-          ref={(refInstance) => {
-            internalRef.current = refInstance;
-            if (refInstance && tableInstance !== refInstance) {
-              setTableInstance(refInstance);
-            }
-          }}
-          data={tableData}
-          headers={memoizedHeaders}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={setColumnVisibility}
-          pagination={pagination}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-          onSort={handleSort}
-          onSearch={handleSearch}
-          rowSelection={rowSelectionState}
-          onRowSelectionChange={handleRowSelectionChange}
-          searchTerm={searchTerm}
-          showColumnVisibilityControl={true}
-          sort={sort}
-          direction={direction}
-          isLoading={loading}
-          isServerSearch={isServerSearch}
-          selectedColumn={selectedColumn}
+
+        {isModalOpen && (
+          <ActionModal<DataRow>
+            isOpen={isModalOpen}
+            onClose={closeActionModal}
+            selectedItems={selectedRows}
+            headers={tableHeaders}
+            reqUrl={req}
+            onSuccess={handleRefreshData}
+            notShow={notShowedEdit}
+          />
+        )}
+
+        <DocumentViewerModal
+          isOpen={isDocumentModalOpen}
+          onClose={handleCloseViewerModal}
+          fileUrl={viewer.fileUrl}
+          fileBuffer={viewer.fileBuffer}
+          fileType={viewer.fileType}
+          fileName={viewer.fileName}
+          isLoading={viewer.isLoading}
+          error={viewer.error}
         />
+
+        {/* Если заголовки еще грузятся при первом открытии роута - показываем спиннер */}
+        {loading && tableHeaders.length === 0 ? (
+          <div className="d-flex justify-content-center align-items-center flex-grow-1">
+            <div className="text-center">
+              <div
+                className="spinner-border text-primary mb-2"
+                role="status"
+              ></div>
+              <div className="text-muted fw-bold">Загрузка реестра...</div>
+            </div>
+          </div>
+        ) : (
+          <BaseTable<DataRow>
+            ref={(refInstance) => {
+              internalRef.current = refInstance;
+              if (refInstance && tableInstance !== refInstance) {
+                setTableInstance(refInstance);
+              }
+            }}
+            data={tableData}
+            headers={memoizedHeaders}
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={setColumnVisibility}
+            pagination={pagination}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            onSort={handleSort}
+            onSearch={handleSearch}
+            rowSelection={rowSelectionState}
+            onRowSelectionChange={handleRowSelectionChange}
+            searchTerm={searchTerm}
+            showColumnVisibilityControl={true}
+            sort={sort}
+            direction={direction}
+            isLoading={loading}
+            isServerSearch={isServerSearch}
+            selectedColumn={selectedColumn}
+          />
+        )}
       </div>
     </div>
   );

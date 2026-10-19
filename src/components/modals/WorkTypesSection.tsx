@@ -1,5 +1,5 @@
 import React from "react";
-import WorkTypesForm from "../creation/WorkTypesForm";
+import WorkTypesForm from '../../pages/creation/dictionaries/WorkTypesForm';
 import { WorkTypes } from "../../types/creation";
 
 interface WorkTypesSectionProps {

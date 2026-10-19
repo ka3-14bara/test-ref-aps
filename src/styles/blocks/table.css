@@ -59,3 +59,16 @@
   vertical-align: middle;
   border-bottom: 1px solid #dee2e6;
 }
+
+/* Фиксация первого столбца с чекбоксом */
+.table-el th:first-child,
+.table-el td:first-child,
+.table-el .select {
+  text-align: center;
+  padding: 0 !important;
+}
+
+.table-el .form-check-input {
+  margin: 0 auto;
+  cursor: pointer;
+}

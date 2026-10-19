@@ -42,275 +42,267 @@ function AppContent() {
   return (
     <div className="app-layout">
       {location.pathname !== "/login" && <Navigation />}
-      <main className="app-layout__content">
-        <Routes>
-          <Route path="/login" element={<Login />} />
+      <main className="app-layout__content d-flex flex-column">
+      <Routes>
+        <Route path="/login" element={<Login />} />
 
-          {/* Роуты администратора */}
-          <Route
-            element={<ProtectedRoute allowedRoles={["ROLE_ADMIN", "ADMIN"]} />}
-          >
-            <Route path="/admin" element={<AdminPanel />} />
-          </Route>
+        {/* Роуты администратора */}
+        <Route
+          element={<ProtectedRoute allowedRoles={["ROLE_ADMIN", "ADMIN"]} />}
+        >
+          <Route path="/admin" element={<AdminPanel />} />
+        </Route>
 
-          {/* Авторизованные рабочие маршруты */}
+        {/* Авторизованные рабочие маршруты */}
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "ROLE_ADMIN",
+                "ADMIN",
+                "ROLE_MANAGER",
+                "MANAGER",
+                "ROLE_USER",
+                "USER",
+              ]}
+            />
+          }
+        >
+          <Route path="/" element={<MainPage />} />
+          <Route path="/change_psswd" element={<ChangePassword />} />
+
+          {/* Справочники */}
           <Route
+            path="/station_names"
             element={
-              <ProtectedRoute
-                allowedRoles={[
-                  "ROLE_ADMIN",
-                  "ADMIN",
-                  "ROLE_MANAGER",
-                  "MANAGER",
-                  "ROLE_USER",
-                  "USER",
-                ]}
+              <TableBuilder
+                req="/station_names"
+                isShowAdd={true}
+                pageTitle="Справочник - Наименования станций"
+                createText="Создать наименование"
               />
             }
-          >
-            <Route path="/" element={<MainPage />} />
-            <Route path="/change_psswd" element={<ChangePassword />} />
+          />
+          <Route
+            path="/station_names/add"
+            element={
+              <AddOneField
+                endPoint="/station_names"
+                prevPage="Наименования станций"
+                title="Справочник - Форма добавления наименования станции"
+                titleLabel="Наименование станции:"
+                placeHolder="Введите наименование"
+              />
+            }
+          />
 
-            {/* Справочники */}
-            <Route
-              path="/station_names"
-              element={
-                <TableBuilder
-                  req="/station_names"
-                  isShowAdd={true}
-                  pageTitle="Справочник - Наименования станций"
-                  createText="Создать наименование"
-                />
-              }
-            />
-            <Route
-              path="/station_names/add"
-              element={
-                <AddOneField
-                  endPoint="/station_names"
-                  prevPage="Наименования станций"
-                  title="Справочник - Форма добавления наименования станции"
-                  titleLabel="Наименование станции:"
-                  placeHolder="Введите наименование"
-                />
-              }
-            />
+          <Route
+            path="/maintenance_teams"
+            element={
+              <TableBuilder
+                req="/maintenance_teams"
+                isShowAdd={true}
+                pageTitle="Справочник - Обслуживающие бригады"
+                createText="Создать бригаду"
+                notShowedEdit={["id"]}
+              />
+            }
+          />
+          <Route
+            path="/maintenance_teams/add"
+            element={
+              <AddMTeam
+                endPoint="/maintenance_teams"
+                prevPage="Обслуживающие бригады"
+                title="Форма добавления обслуживающей бригады"
+                titleLabel="Название обслуживающей бригады:"
+                placeHolder="Введите название"
+              />
+            }
+          />
 
-            <Route
-              path="/maintenance_teams"
-              element={
-                <TableBuilder
-                  req="/maintenance_teams"
-                  isShowAdd={true}
-                  pageTitle="Справочник - Обслуживающие бригады"
-                  createText="Создать бригаду"
-                  notShowedEdit={["id"]}
-                />
-              }
-            />
-            <Route
-              path="/maintenance_teams/add"
-              element={
-                <AddMTeam
-                  endPoint="/maintenance_teams"
-                  prevPage="Обслуживающие бригады"
-                  title="Форма добавления обслуживающей бригады"
-                  titleLabel="Название обслуживающей бригады:"
-                  placeHolder="Введите название"
-                />
-              }
-            />
+          <Route
+            path="/orgs"
+            element={
+              <TableBuilder
+                req="/orgs"
+                isShowAdd={true}
+                pageTitle="Справочник - Подразделения и организации"
+                createText="Создать организацию"
+                notShowedEdit={["id"]}
+              />
+            }
+          />
+          <Route path="/orgs/add" element={<AddOrg endPoint="/orgs" />} />
 
-            <Route
-              path="/orgs"
-              element={
-                <TableBuilder
-                  req="/orgs"
-                  isShowAdd={true}
-                  pageTitle="Справочник - Подразделения и организации"
-                  createText="Создать организацию"
-                  notShowedEdit={["id"]}
-                />
-              }
-            />
-            <Route path="/orgs/add" element={<AddOrg endPoint="/orgs" />} />
+          <Route
+            path="/detector_types"
+            element={
+              <TableBuilder
+                req="/detector_types"
+                isShowAdd={true}
+                pageTitle="Справочник - Типы извещателей и датчиков"
+                createText="Создать тип"
+              />
+            }
+          />
+          <Route
+            path="/detector_types/add"
+            element={
+              <AddOneField
+                endPoint="/detector_types"
+                prevPage="Типы извещателей и датчиков"
+                title="Форма добавления типа датчика"
+                titleLabel="Тип датчика:"
+                placeHolder="Введите тип датчика"
+              />
+            }
+          />
 
-            <Route
-              path="/detector_types"
-              element={
-                <TableBuilder
-                  req="/detector_types"
-                  isShowAdd={true}
-                  pageTitle="Справочник - Типы извещателей и датчиков"
-                  createText="Создать тип"
-                />
-              }
-            />
-            <Route
-              path="/detector_types/add"
-              element={
-                <AddOneField
-                  endPoint="/detector_types"
-                  prevPage="Типы извещателей и датчиков"
-                  title="Форма добавления типа датчика"
-                  titleLabel="Тип датчика:"
-                  placeHolder="Введите тип датчика"
-                />
-              }
-            />
+          <Route
+            path="/detectors"
+            element={
+              <TableBuilder
+                req="/detectors"
+                isShowAdd={true}
+                pageTitle="Справочник - Извещатели и датчики"
+                createText="Создать датчик"
+              />
+            }
+          />
+          <Route
+            path="/detectors/add"
+            element={<AddDetectors endPoint="/detectors" />}
+          />
 
-            <Route
-              path="/detectors"
-              element={
-                <TableBuilder
-                  req="/detectors"
-                  isShowAdd={true}
-                  pageTitle="Справочник - Извещатели и датчики"
-                  createText="Создать датчик"
-                />
-              }
-            />
-            <Route
-              path="/detectors/add"
-              element={<AddDetectors endPoint="/detectors" />}
-            />
+          <Route
+            path="/work_type_codes"
+            element={
+              <TableBuilder
+                req="/work_type_codes"
+                isShowAdd={true}
+                pageTitle="Справочник - Коды регламентных работ"
+                createText="Создать код"
+                notShowedEdit={["id"]}
+              />
+            }
+          />
+          <Route
+            path="/work_type_codes/add"
+            element={
+              <AddOneField
+                endPoint="/work_type_codes"
+                prevPage="Коды регламентных работ"
+                title="Форма добавления кода регламентной работы"
+                titleLabel="Код вида регламентной работы:"
+                placeHolder="Введите код"
+              />
+            }
+          />
 
-            <Route
-              path="/work_type_codes"
-              element={
-                <TableBuilder
-                  req="/work_type_codes"
-                  isShowAdd={true}
-                  pageTitle="Справочник - Коды регламентных работ"
-                  createText="Создать код"
-                  notShowedEdit={["id"]}
-                />
-              }
-            />
-            <Route
-              path="/work_type_codes/add"
-              element={
-                <AddOneField
-                  endPoint="/work_type_codes"
-                  prevPage="Коды регламентных работ"
-                  title="Форма добавления кода регламентной работы"
-                  titleLabel="Код вида регламентной работы:"
-                  placeHolder="Введите код"
-                />
-              }
-            />
+          <Route
+            path="/work_types"
+            element={
+              <TableBuilder
+                req="/work_types"
+                isShowAdd={true}
+                pageTitle="Справочник - Виды регламентных работ"
+                createText="Создать вид работы"
+                notShowedEdit={["КФ", "ОСМ", "КИ", "Обсл", "Пров", "ПР"]}
+              />
+            }
+          />
+          <Route
+            path="/work_types/add"
+            element={<AddMaintenanceType endPoint="/work_types" />}
+          />
 
-            <Route
-              path="/work_types"
-              element={
-                <TableBuilder
-                  req="/work_types"
-                  isShowAdd={true}
-                  pageTitle="Справочник - Виды регламентных работ"
-                  createText="Создать вид работы"
-                  notShowedEdit={["КФ", "ОСМ", "КИ", "Обсл", "Пров", "ПР"]}
-                />
-              }
-            />
-            <Route
-              path="/work_types/add"
-              element={<AddMaintenanceType endPoint="/work_types" />}
-            />
+          <Route
+            path="/documents"
+            element={
+              <TableBuilder
+                isShowAdd={true}
+                req="/documents"
+                pageTitle="Справочник - Документы"
+                createText="Загрузить документ"
+                notShowedEdit={["id"]}
+              />
+            }
+          />
+          <Route
+            path="/documents/add"
+            element={<AddDocument endPoint="/documents" />}
+          />
 
-            <Route
-              path="/documents"
-              element={
-                <TableBuilder
-                  isShowAdd={true}
-                  req="/documents"
-                  pageTitle="Справочник - Документы"
-                  createText="Загрузить документ"
-                  notShowedEdit={["id"]}
-                />
-              }
-            />
-            <Route
-              path="/documents/add"
-              element={<AddDocument endPoint="/documents" />}
-            />
+          {/* Журналы */}
+          <Route
+            path="/stations"
+            element={
+              <TableBuilder
+                req="/stations"
+                isShowAdd={true}
+                pageTitle="Учёт станций ПС, ОС, ОПС"
+                createText="Добавить станцию"
+                notShowedEdit={["КФ", "ОСМ", "КИ", "Обсл", "Пров", "ПР"]}
+                draftPage="/stations/add/drafts"
+              />
+            }
+          />
+          <Route
+            path="/stations/add"
+            element={<AddStations endPoint="/stations" />}
+          />
+          <Route path="/stations/add/drafts" element={<DraftsTableStation />} />
 
-            {/* Журналы */}
-            <Route
-              path="/stations"
-              element={
-                <TableBuilder
-                  req="/stations"
-                  isShowAdd={true}
-                  pageTitle="Учёт станций ПС, ОС, ОПС"
-                  createText="Добавить станцию"
-                  notShowedEdit={["КФ", "ОСМ", "КИ", "Обсл", "Пров", "ПР"]}
-                  draftPage="/stations/add/drafts"
-                />
-              }
-            />
-            <Route
-              path="/stations/add"
-              element={<AddStations endPoint="/stations" />}
-            />
-            <Route
-              path="/stations/add/drafts"
-              element={<DraftsTableStation />}
-            />
+          <Route
+            path="/trains"
+            element={
+              <TableBuilder
+                req="/trains"
+                isShowAdd={true}
+                pageTitle="Журнал - Учёт шлейфов ПС"
+                createText="Добавить"
+                notShowedEdit={["КФ", "ОСМ", "КИ", "Обсл", "Пров", "ПР"]}
+                draftPage="/trains/add/drafts"
+              />
+            }
+          />
+          <Route path="/trains/add" element={<AddTrain endPoint="/trains" />} />
+          <Route path="/trains/add/drafts" element={<DraftsTableTrain />} />
 
-            <Route
-              path="/trains"
-              element={
-                <TableBuilder
-                  req="/trains"
-                  isShowAdd={true}
-                  pageTitle="Журнал - Учёт шлейфов ПС"
-                  createText="Добавить шлейф"
-                  notShowedEdit={["КФ", "ОСМ", "КИ", "Обсл", "Пров", "ПР"]}
-                  draftPage="/trains/add/drafts"
-                />
-              }
-            />
-            <Route
-              path="/trains/add"
-              element={<AddTrain endPoint="/trains" />}
-            />
-            <Route path="/trains/add/drafts" element={<DraftsTableTrain />} />
+          <Route
+            path="/subjects"
+            element={
+              <TableBuilder
+                req="/subjects"
+                isShowAdd={true}
+                pageTitle="Журнал - Учёт объектов ОС"
+                createText="Добавить объект ОС"
+                notShowedEdit={["id"]}
+                draftPage="/subjects/add/drafts"
+              />
+            }
+          />
+          <Route
+            path="/subjects/add"
+            element={<AddObjectOS endPoint="/subjects" />}
+          />
+          <Route path="/subjects/add/drafts" element={<DraftsTableOS />} />
 
-            <Route
-              path="/subjects"
-              element={
-                <TableBuilder
-                  req="/subjects"
-                  isShowAdd={true}
-                  pageTitle="Журнал - Учёт объектов ОС"
-                  createText="Добавить объект ОС"
-                  notShowedEdit={["id"]}
-                  draftPage="/subjects/add/drafts"
-                />
-              }
-            />
-            <Route
-              path="/subjects/add"
-              element={<AddObjectOS endPoint="/subjects" />}
-            />
-            <Route path="/subjects/add/drafts" element={<DraftsTableOS />} />
+          {/* Графики */}
+          <Route
+            path="/schedules/train"
+            element={<ExcelViewer req="/schedules/train" header="ТО ПС СОУЭ" />}
+          />
+          <Route
+            path="/schedules/subject"
+            element={<ExcelViewer req="/schedules/subject" header="ТО ОС" />}
+          />
 
-            {/* Графики */}
-            <Route
-              path="/schedules/train"
-              element={
-                <ExcelViewer req="/schedules/train" header="ТО ПС СОУЭ" />
-              }
-            />
-            <Route
-              path="/schedules/subject"
-              element={<ExcelViewer req="/schedules/subject" header="ТО ОС" />}
-            />
-
-            {/* Отчеты */}
-            <Route path="/report" element={<ReportsPage />} />
-          </Route>
-        </Routes>
+          {/* Отчеты */}
+          <Route path="/report" element={<ReportsPage />} />
+        </Route>
+      </Routes>
       </main>
     </div>
   );

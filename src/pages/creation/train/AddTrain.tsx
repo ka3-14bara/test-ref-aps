@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance, useAxiosInterceptor } from "../../../api/client";
 import TrainForm from "./TrainForm";
@@ -33,6 +33,30 @@ export const AddTrain: React.FC<RequestCustom> = ({ endPoint }) => {
     setSelectedDetectors,
     resetForm,
   } = useTrainFormState("trainFormData");
+
+  useEffect(() => {
+    const draftRaw = localStorage.getItem("temp_load_draft");
+    if (draftRaw) {
+      try {
+        const parsed = JSON.parse(draftRaw);
+        if (parsed.formData) {
+          setFormData(parsed.formData);
+        }
+        if (Array.isArray(parsed.selectedDetectors)) {
+          setSelectedDetectors(parsed.selectedDetectors);
+        }
+        if (parsed.id) {
+          window.sessionStorage.setItem(
+            "current_draft_id",
+            parsed.id.toString(),
+          );
+        }
+        localStorage.removeItem("temp_load_draft");
+      } catch (e) {
+        console.error("Ошибка парсинга черновика в AddTrain:", e);
+      }
+    }
+  }, [setFormData, setSelectedDetectors]);
 
   // Модальные окна
   const [isCreateModalOpenTeam, setIsCreateModalOpenTeam] = useState(false);
@@ -148,7 +172,10 @@ export const AddTrain: React.FC<RequestCustom> = ({ endPoint }) => {
   };
 
   return (
-    <div className="container mt-2">
+    <div
+      className="container-fluid mt-2 d-flex flex-column flex-grow-1"
+      style={{ minHeight: 0, width: "80%" }}
+    >
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
           <li className="breadcrumb-item">
@@ -195,40 +222,46 @@ export const AddTrain: React.FC<RequestCustom> = ({ endPoint }) => {
         </div>
       </div>
 
-      {isMassCreationMode ? (
-        <MassCreationManager
-          key={massCreationKey}
-          initialFormData={formData}
-          initialDetectors={selectedDetectors}
-          onSubmit={handleSubmitMass}
-          onReset={resetForm}
-          loading={loading}
-        />
-      ) : (
-        <TrainForm
-          key={regularCreationKey}
-          formData={formData}
-          setFormData={setFormData as any}
-          selectedDetectors={selectedDetectors}
-          setSelectedDetectors={setSelectedDetectors}
-          onSubmit={handleSubmitRegular}
-          onReset={resetForm}
-          onSaveAsDraft={handleSaveAsDraft}
-          onBack={() => navigate("/trains")}
-          loading={loading}
-          error={error}
-          isCreateModalOpenTeam={isCreateModalOpenTeam}
-          setIsCreateModalOpenTeam={setIsCreateModalOpenTeam}
-          isCreateModalOpenOrg={isCreateModalOpenOrg}
-          setIsCreateModalOpenOrg={setIsCreateModalOpenOrg}
-          isCreateModalOpenExecDoc={isCreateModalOpenExecDoc}
-          setIsCreateModalOpenExecDoc={setIsCreateModalOpenExecDoc}
-          isCreateModalOpenProjectDoc={isCreateModalOpenProjectDoc}
-          setIsCreateModalOpenProjectDoc={setIsCreateModalOpenProjectDoc}
-          isCreateModalOpenComissionDoc={isCreateModalOpenComissionDoc}
-          setIsCreateModalOpenComissionDoc={setIsCreateModalOpenComissionDoc}
-        />
-      )}
+      <div className="px-3 pb-2 pt-1 flex-grow-1 position-relative">
+        <div className="position-absolute top-0 bottom-0 start-0 end-0 overflow-auto p-3">
+          {isMassCreationMode ? (
+            <MassCreationManager
+              key={massCreationKey}
+              initialFormData={formData}
+              initialDetectors={selectedDetectors}
+              onSubmit={handleSubmitMass}
+              onReset={resetForm}
+              loading={loading}
+            />
+          ) : (
+            <TrainForm
+              key={regularCreationKey}
+              formData={formData}
+              setFormData={setFormData as any}
+              selectedDetectors={selectedDetectors}
+              setSelectedDetectors={setSelectedDetectors}
+              onSubmit={handleSubmitRegular}
+              onReset={resetForm}
+              onSaveAsDraft={handleSaveAsDraft}
+              onBack={() => navigate("/trains")}
+              loading={loading}
+              error={error}
+              isCreateModalOpenTeam={isCreateModalOpenTeam}
+              setIsCreateModalOpenTeam={setIsCreateModalOpenTeam}
+              isCreateModalOpenOrg={isCreateModalOpenOrg}
+              setIsCreateModalOpenOrg={setIsCreateModalOpenOrg}
+              isCreateModalOpenExecDoc={isCreateModalOpenExecDoc}
+              setIsCreateModalOpenExecDoc={setIsCreateModalOpenExecDoc}
+              isCreateModalOpenProjectDoc={isCreateModalOpenProjectDoc}
+              setIsCreateModalOpenProjectDoc={setIsCreateModalOpenProjectDoc}
+              isCreateModalOpenComissionDoc={isCreateModalOpenComissionDoc}
+              setIsCreateModalOpenComissionDoc={
+                setIsCreateModalOpenComissionDoc
+              }
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

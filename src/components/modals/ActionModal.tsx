@@ -4,7 +4,6 @@ import React, {
   useCallback,
   useMemo,
   useRef,
-  ChangeEvent,
 } from "react";
 import Modal from "react-modal";
 import Draggable from "react-draggable";

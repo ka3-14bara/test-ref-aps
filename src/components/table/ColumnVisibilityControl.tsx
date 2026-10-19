@@ -1,3 +1,4 @@
+import React from "react";
 import { Table } from "@tanstack/react-table";
 import Checkbox from "../common/Checkbox";
 
@@ -8,6 +9,16 @@ interface ColumnVisibilityControlProps<T extends Record<string, any>> {
 export function ColumnVisibilityControl<T extends Record<string, any>>({
   table,
 }: ColumnVisibilityControlProps<T>) {
+  const isAllVisible = table.getIsAllColumnsVisible();
+  const isSomeVisible = table.getIsSomeColumnsVisible();
+
+  // Обработчик для "Показать/скрыть все"
+  const handleToggleAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    const targetState = e.target.checked;
+    table.toggleAllColumnsVisible(targetState);
+  };
+
   return (
     <details className="p-2 col-visibility">
       <summary className="cursor-pointer font-semibold">
@@ -17,33 +28,42 @@ export function ColumnVisibilityControl<T extends Record<string, any>>({
         <div>
           <label className="block mb-1 flex items-center space-x-2">
             <Checkbox
-              checked={table.getIsAllColumnsVisible()}
-              onChange={table.getToggleAllColumnsVisibilityHandler()}
+              checked={isAllVisible}
+              indeterminate={isSomeVisible && !isAllVisible}
+              onChange={handleToggleAll}
               label="Показать/скрыть все"
             />
           </label>
         </div>
         <hr className="my-1" />
         {table.getAllColumns().map((column) => {
+          // Показываем в списке ТОЛЬКО верхний уровень (группы) и исключаем чекбокс выбора строк
           if (column.depth > 0 || column.id === "select_group") return null;
+
+          const isChecked = column.getIsVisible();
 
           return (
             <div key={column.id} className="px-1">
               <label className="flex items-center space-x-2">
                 <Checkbox
-                  checked={column.getIsVisible()}
+                  checked={isChecked}
                   label={
                     typeof column.columnDef.header === "string"
                       ? column.columnDef.header
                       : column.id
                   }
-                  onChange={(isVisible) => {
-                    column.toggleVisibility(isVisible);
-                    if (column.getCanHide()) {
-                      column.getLeafColumns().forEach((leaf) => {
-                        leaf.toggleVisibility(isVisible);
-                      });
-                    }
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    e.stopPropagation();
+                    const newVisibility = e.target.checked;
+
+                    // 1. Переключаем видимость самой группы
+                    column.toggleVisibility(newVisibility);
+
+                    // 2. Обязательно переключаем видимость всех дочерних колонок в группе
+                    const leafCols = column.getLeafColumns();
+                    leafCols.forEach((leaf) => {
+                      leaf.toggleVisibility(newVisibility);
+                    });
                   }}
                 />
               </label>

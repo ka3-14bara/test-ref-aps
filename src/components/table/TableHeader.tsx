@@ -87,7 +87,9 @@ const TableHeaderComponent = <T extends Record<string, any>>({
                   backgroundColor: "#f8f9fa",
                   borderBottom: "1px solid #dee2e6",
                   verticalAlign: "top",
+                  width: isSelect ? "24px" : undefined,
                   minWidth: isSelect ? "24px" : "150px",
+                  maxWidth: isSelect ? "24px" : undefined,
                   cursor: isSortable ? "pointer" : "default",
                   height: "inherit",
                 }}

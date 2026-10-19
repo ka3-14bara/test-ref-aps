@@ -72,7 +72,14 @@ const TableRowComponent = <T extends Record<string, any>>({
               height: "44px",
               backgroundColor: rowBackgroundColor,
               ...(isSelectColumn
-                ? { position: "sticky", left: 0, zIndex: 1 }
+                ? {
+                    position: "sticky",
+                    left: 0,
+                    zIndex: 1,
+                    width: "18px",
+                    minWidth: "18px",
+                    maxWidth: "18px",
+                  }
                 : {}),
             }}
             title={tooltip}

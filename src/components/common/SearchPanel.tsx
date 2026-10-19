@@ -61,7 +61,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
             isServerSearch
               ? "Серверный поиск (Enter)..."
               : selectedColumn === "all"
-                ? "Локальный поиск по всем колонкам..."
+                ? "Поиск по всем колонкам на текущей странице..."
                 : "Поиск по выбранному столбцу..."
           }
           value={localTerm}
@@ -82,7 +82,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
 
       {/* Селектор доступен строго при локальном поиске */}
       <select
-        className="form-select w-auto"
+        className="form-select w-50"
         value={isServerSearch ? "all" : selectedColumn}
         disabled={isServerSearch}
         title={
@@ -116,7 +116,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
             className="form-check-label ms-2 small user-select-none"
             htmlFor="serverSearchSwitch"
           >
-            Серверный поиск
+            {isServerSearch ? "Серверный поиск" : "Поиск на странцие"}
           </label>
         </div>
       )}

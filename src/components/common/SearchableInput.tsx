@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import Modal from "react-modal";
 import { axiosInstance } from "../../api/client";
+
+Modal.setAppElement("#root");
 
 interface SearchableInputProps<T> {
   endpoint: string;
@@ -33,13 +36,15 @@ export function SearchableInput<T extends Record<string, any>>({
   const [isLoading, setIsLoading] = useState(false);
   const [isSelected, setIsSelected] = useState(Boolean(showAfterReload));
 
+  // Состояние модального окна со всем списком ("...")
+  const [isFullListModalOpen, setIsFullListModalOpen] = useState(false);
+  const [modalSearchTerm, setModalSearchTerm] = useState("");
+
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (showAfterReload) {
-      setSearchTerm(showAfterReload);
-      setIsSelected(true);
-    }
+    setSearchTerm(showAfterReload || "");
+    setIsSelected(Boolean(showAfterReload));
   }, [showAfterReload]);
 
   const loadData = useCallback(async () => {
@@ -47,6 +52,7 @@ export function SearchableInput<T extends Record<string, any>>({
       setIsLoading(true);
       const res = await axiosInstance.get<T[]>(endpoint);
       setItems(res.data || []);
+      setFilteredItems(res.data || []);
     } catch (err) {
       console.error(`Ошибка загрузки данных из ${endpoint}:`, err);
     } finally {
@@ -71,12 +77,19 @@ export function SearchableInput<T extends Record<string, any>>({
     item: T,
     param: keyof T | string | ((i: T) => string),
   ): string => {
+    if (!item) return "";
     if (typeof param === "function") return param(item) || "";
     const key = String(param);
     if (key.includes(".")) {
-      return key.split(".").reduce((acc, part) => acc?.[part], item) ?? "";
+      const resolved = key
+        .split(".")
+        .reduce<any>(
+          (acc, part) => (acc != null ? acc[part] : undefined),
+          item,
+        );
+      return resolved != null ? String(resolved) : "";
     }
-    return item[key] ?? "";
+    return item[key] != null ? String(item[key]) : "";
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +97,7 @@ export function SearchableInput<T extends Record<string, any>>({
     setSearchTerm(term);
     setIsSelected(false);
 
-    if (!isOpen && items.length === 0) {
+    if (items.length === 0) {
       loadData();
     }
 
@@ -94,6 +107,7 @@ export function SearchableInput<T extends Record<string, any>>({
       return;
     }
 
+    const search = term.toLowerCase();
     const filtered = items.filter((item) => {
       const mainVal = String(
         getPropertyValue(item, searchAndShowParam),
@@ -101,7 +115,6 @@ export function SearchableInput<T extends Record<string, any>>({
       const commVal = String(
         getPropertyValue(item, commentParam),
       ).toLowerCase();
-      const search = term.toLowerCase();
       return mainVal.includes(search) || commVal.includes(search);
     });
 
@@ -122,6 +135,7 @@ export function SearchableInput<T extends Record<string, any>>({
     setSearchTerm(mainVal);
     setIsSelected(true);
     setIsOpen(false);
+    setIsFullListModalOpen(false);
     onItemSelected(item);
   };
 
@@ -131,8 +145,27 @@ export function SearchableInput<T extends Record<string, any>>({
     onItemSelected(null as any);
   };
 
+  const handleOpenFullList = () => {
+    if (items.length === 0) {
+      loadData();
+    }
+    setModalSearchTerm("");
+    setIsFullListModalOpen(true);
+    setIsOpen(false);
+  };
+
+  const modalFilteredItems = items.filter((item) => {
+    if (!modalSearchTerm.trim()) return true;
+    const search = modalSearchTerm.toLowerCase();
+    const mainVal = String(
+      getPropertyValue(item, searchAndShowParam),
+    ).toLowerCase();
+    const commVal = String(getPropertyValue(item, commentParam)).toLowerCase();
+    return mainVal.includes(search) || commVal.includes(search);
+  });
+
   return (
-    <div ref={wrapperRef} className="position-relative w-100">
+    <div ref={wrapperRef} className="position-relative flex-grow-1">
       <div className="input-group">
         <input
           type="text"
@@ -147,6 +180,7 @@ export function SearchableInput<T extends Record<string, any>>({
           autoComplete="off"
           required={isRequired}
         />
+
         {searchTerm && !isDisabled && (
           <button
             type="button"
@@ -157,6 +191,17 @@ export function SearchableInput<T extends Record<string, any>>({
             <i className="bi bi-x"></i>
           </button>
         )}
+
+        {/* Кнопка "..." для открытия модалки полного списка */}
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
+          onClick={handleOpenFullList}
+          disabled={isDisabled}
+          title="Открыть полный список"
+        >
+          <i className="bi bi-three-dots"></i>
+        </button>
       </div>
 
       {isOpen && !isDisabled && (
@@ -196,6 +241,90 @@ export function SearchableInput<T extends Record<string, any>>({
             </li>
           )}
         </ul>
+      )}
+
+      {/* Модальное окно выбора из полного списка */}
+      {isFullListModalOpen && (
+        <Modal
+          isOpen={isFullListModalOpen}
+          onRequestClose={() => setIsFullListModalOpen(false)}
+          className="app-modal"
+          overlayClassName="app-modal-overlay"
+        >
+          <div className="app-modal__header">
+            <h5 className="app-modal__title">
+              <i className="bi bi-list-ul me-2"></i> Выбор элемента из списка
+            </h5>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={() => setIsFullListModalOpen(false)}
+            />
+          </div>
+
+          <div className="app-modal__body">
+            <div className="mb-3">
+              <div className="input-group">
+                <span className="input-group-text bg-white">
+                  <i className="bi bi-search text-muted"></i>
+                </span>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Фильтр в списке..."
+                  value={modalSearchTerm}
+                  onChange={(e) => setModalSearchTerm(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div
+              className="list-group overflow-auto"
+              style={{ maxHeight: "50vh" }}
+            >
+              {modalFilteredItems.length > 0 ? (
+                modalFilteredItems.map((item, idx) => {
+                  const mainText = getPropertyValue(item, searchAndShowParam);
+                  const commentText = getPropertyValue(item, commentParam);
+                  const statusText = item.deleted ? "Удалено" : "Активно";
+                  return (
+                    <button
+                      key={item.id ?? idx}
+                      type="button"
+                      className="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2"
+                      onClick={() => handleSelect(item)}
+                    >
+                      <span className="fw-medium">{mainText}</span>
+                      {commentText && (
+                        <span className="badge bg-light text-secondary border">
+                          {commentText}
+                        </span>
+                      )}
+                        <span className={`badge ${item.deleted ? "text-bg-danger" : "text-bg-success" } text-white border`}>
+                          {statusText}
+                        </span>
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="text-center py-4 text-muted">
+                  Записей не найдено
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="app-modal__footer">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setIsFullListModalOpen(false)}
+            >
+              Закрыть
+            </button>
+          </div>
+        </Modal>
       )}
     </div>
   );

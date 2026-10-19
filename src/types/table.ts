@@ -29,7 +29,7 @@ export interface ColumnConfig<TData> {
   enableSorting?: boolean;
   enableFiltering?: boolean;
   meta?: CustomColumnMeta;
-  render?: (data: TData) => React.ReactNode;
+  render: (data: TData) => React.ReactNode;
 }
 
 export interface PaginationInfo {
@@ -81,7 +81,7 @@ export interface TableControlsProps<T extends Record<string, any>> {
   handleOpenViewerClick?: () => void;
   table: Table<T>;
   btnCreateNewText: string;
-  drafts: string;
+  drafts?: string;
   isServerSearch?: boolean;
   toggleServerSearch?: () => void;
   onSearchSubmit?: (term?: string) => void;

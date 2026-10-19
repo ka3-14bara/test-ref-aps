@@ -35,7 +35,20 @@ const getEmptyFormData = (): FormDataTrain => ({
 });
 
 export const useTrainFormState = (storageKey?: string) => {
-  const [formData, setFormData] = useState<FormDataTrain>(() => {
+  const [formData, setFormDataInternal] = useState<FormDataTrain>(() => {
+    // 1. Приоритет: временный загруженный черновик
+    const tempDraftRaw = localStorage.getItem("temp_load_draft");
+    if (tempDraftRaw) {
+      try {
+        const parsed = JSON.parse(tempDraftRaw);
+        if (parsed.formData) {
+          return { ...getEmptyFormData(), ...parsed.formData };
+        }
+      } catch (e) {
+        console.error("Ошибка парсинга temp_load_draft в хуке:", e);
+      }
+    }
+    // 2. Иначе автосохраненный стейт формы
     if (storageKey) {
       return GetInitialValue(storageKey, getEmptyFormData());
     }
@@ -44,7 +57,20 @@ export const useTrainFormState = (storageKey?: string) => {
 
   const [selectedDetectors, setSelectedDetectors] = useState<
     SelectedDetector[]
-  >([]);
+  >(() => {
+    const tempDraftRaw = localStorage.getItem("temp_load_draft");
+    if (tempDraftRaw) {
+      try {
+        const parsed = JSON.parse(tempDraftRaw);
+        if (Array.isArray(parsed.selectedDetectors)) {
+          return parsed.selectedDetectors;
+        }
+      } catch (e) {
+        console.error("Ошибка парсинга датчиков temp_load_draft:", e);
+      }
+    }
+    return [];
+  });
 
   const updateFormData = useCallback(
     (
@@ -52,7 +78,7 @@ export const useTrainFormState = (storageKey?: string) => {
         | Partial<FormDataTrain>
         | ((prev: FormDataTrain) => FormDataTrain),
     ) => {
-      setFormData((prev) => {
+      setFormDataInternal((prev) => {
         const newData =
           typeof updater === "function"
             ? updater(prev)
@@ -68,7 +94,7 @@ export const useTrainFormState = (storageKey?: string) => {
 
   const resetForm = useCallback(() => {
     const empty = getEmptyFormData();
-    setFormData(empty);
+    setFormDataInternal(empty);
     setSelectedDetectors([]);
     if (storageKey) {
       localStorage.removeItem(storageKey);

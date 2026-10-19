@@ -15,6 +15,11 @@ export const searchableConfigs = {
     searchAndShowParam: "title",
     commentParam: "comment",
   },
+  name: {
+    endpoint: "/station_names/all",
+    searchAndShowParam: "title",
+    commentParam: "comment",
+  },
   org: {
     endpoint: "/orgs/all",
     searchAndShowParam: "title",
@@ -63,20 +68,9 @@ export const searchableConfigs = {
 } as const;
 
 export type SearchableKey = keyof typeof searchableConfigs;
-export type SearchableType<K extends SearchableKey> = any;
+export type SearchableType<_K extends SearchableKey = SearchableKey> = any;
 
 export const DATE = ["dateEntered", "dateAdjusted"];
 export const DETECTORS = ["detectors", "detectorsValue"];
-export const INT_INPUTS = [
-  "capacity",
-  "sectionNumber",
-  "sound",
-  "light",
-  "voice",
-  "lightSound",
-];
-export const FLOAT_INPUTS = [
-  "normative",
-  "laboriousness",
-  "trainLaboriousness",
-];
+export const INT_INPUTS = ["capacity", "sectionNumber", "sound", "light", "voice", "lightSound"];
+export const FLOAT_INPUTS = ["normative", "laboriousness", "trainLaboriousness"];

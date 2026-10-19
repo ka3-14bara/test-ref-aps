@@ -74,11 +74,19 @@ export const AddStations: React.FC<RequestCustom> = ({ endPoint }) => {
     if (draftRaw) {
       try {
         const parsed = JSON.parse(draftRaw);
-        setFormData(parsed.formData);
-        window.sessionStorage.setItem("current_draft_id", parsed.id.toString());
+        if (parsed.formData) {
+          setFormData(parsed.formData);
+          localStorage.setItem("addStation", JSON.stringify(parsed.formData));
+        }
+        if (parsed.id) {
+          window.sessionStorage.setItem(
+            "current_draft_id",
+            parsed.id.toString(),
+          );
+        }
         localStorage.removeItem("temp_load_draft");
       } catch (e) {
-        console.error("Ошибка чтения черновика:", e);
+        console.error("Ошибка чтения черновика станции:", e);
       }
     }
   }, [setFormData]);
@@ -183,7 +191,10 @@ export const AddStations: React.FC<RequestCustom> = ({ endPoint }) => {
   };
 
   return (
-    <div className="container mt-2">
+    <div
+      className="container-fluid mt-2 d-flex flex-column flex-grow-1"
+      style={{ minHeight: 0, width: "80%" }}
+    >
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
           <li className="breadcrumb-item">
@@ -218,8 +229,11 @@ export const AddStations: React.FC<RequestCustom> = ({ endPoint }) => {
         </div>
       )}
 
-      <div className="card shadow-sm border-0 p-4">
-        <form onSubmit={handleSubmit}>
+      <div className="px-3 pb-2 pt-1 flex-grow-1 position-relative">
+        <form
+          onSubmit={handleSubmit}
+          className="position-absolute top-0 bottom-0 start-0 end-0 overflow-auto p-3"
+        >
           <div className="row g-3 mb-3">
             <div className="col-md-6">
               <label

@@ -29,10 +29,10 @@ const COMMON_FIELD_OPTIONS: CommonFieldOption[] = [
 ];
 
 interface CommonFieldsSelectorProps {
-  commonFields: string[];
-  commonFieldValues: Record<string, any>;
-  onToggleField: (field: string) => void;
-  onValueChange: (field: string, value: any) => void;
+  commonFields: (keyof FormDataTrain)[];
+  commonFieldValues: Partial<FormDataTrain>;
+  onToggleField: (field: keyof FormDataTrain) => void;
+  onValueChange: (field: keyof FormDataTrain, value: any) => void;
 }
 
 export const CommonFieldsSelector: React.FC<CommonFieldsSelectorProps> = ({
@@ -41,11 +41,11 @@ export const CommonFieldsSelector: React.FC<CommonFieldsSelectorProps> = ({
   onToggleField,
   onValueChange,
 }) => {
-  const handleCheckboxChange = (field: string) => {
+  const handleCheckboxChange = (field: keyof FormDataTrain) => {
     onToggleField(field);
   };
 
-  const renderFieldInput = (field: string) => {
+  const renderFieldInput = (field: keyof FormDataTrain) => {
     const value = commonFieldValues[field];
     const onChange = (val: any) => onValueChange(field, val);
 
@@ -91,7 +91,7 @@ export const CommonFieldsSelector: React.FC<CommonFieldsSelectorProps> = ({
           <input
             type="date"
             className="form-control"
-            value={value ?? ""}
+            value={typeof value === "string" ? value : ""}
             onChange={(e) => onChange(e.target.value)}
           />
         );
@@ -101,7 +101,7 @@ export const CommonFieldsSelector: React.FC<CommonFieldsSelectorProps> = ({
           <input
             type="number"
             className="form-control"
-            value={value ?? ""}
+            value={typeof value === "string" ? value : ""}
             onChange={(e) => onChange(parseInt(e.target.value, 10) || null)}
             placeholder="0"
           />
@@ -111,7 +111,7 @@ export const CommonFieldsSelector: React.FC<CommonFieldsSelectorProps> = ({
           <input
             type="text"
             className="form-control"
-            value={value ?? ""}
+            value={typeof value === "string" ? value : ""}
             onChange={(e) => onChange(e.target.value || null)}
             placeholder="0.000"
             required={true}
@@ -146,7 +146,7 @@ export const CommonFieldsSelector: React.FC<CommonFieldsSelectorProps> = ({
           <input
             type="text"
             className="form-control"
-            value={value ?? ""}
+            value={typeof value === "string" ? value : ""}
             onChange={(e) => onChange(e.target.value)}
           />
         );

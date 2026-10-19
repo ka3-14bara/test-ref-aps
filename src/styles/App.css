@@ -59,10 +59,12 @@ body,
 }
 
 .table-body-container {
+  display: flex;         /* ДОБАВИТЬ: делаем контейнер флексовым */
+  flex-direction: column;/* ДОБАВИТЬ: контент идет сверху вниз */
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  overflow: auto; /* Скроллится только сама таблица внутри */
+  overflow: auto; 
   position: relative;
 }
 
@@ -88,6 +90,7 @@ body,
 /* Сама таблица */
 .table-el {
   width: 100%;
+  height: max-content;
   border-collapse: separate;
   border-spacing: 0;
   margin-bottom: 0;

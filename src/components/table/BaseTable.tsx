@@ -65,6 +65,8 @@ export const BaseTable = forwardRef(
     }, [data]);
 
     const columns = useMemo<ColumnDef<T>[]>(() => {
+      if (!headers || headers.length === 0) return [];
+
       const row1 = headers.filter((h) => h.row === 1);
       const row2 = [...headers.filter((h) => h.row === 2)];
 
@@ -117,26 +119,39 @@ export const BaseTable = forwardRef(
 
       const selectionColumn = {
         id: "select_group",
+        size: 24,
+        minSize: 24,
+        maxSize: 24,
         header: ({ table }: any) => (
-          <div onClick={(e) => e.stopPropagation()}>
+          <div
+            className="d-flex justify-content-center align-items-center w-100 h-100"
+            onClick={(e) => e.stopPropagation()}
+          >
             <IndeterminateCheckbox
               checked={table.getIsAllPageRowsSelected()}
+              indeterminate={table.getIsSomePageRowsSelected()}
               onChange={table.getToggleAllPageRowsSelectedHandler()}
-              label=""
             />
           </div>
         ),
         columns: [
           {
             id: "select",
+            size: 24,
+            minSize: 24,
+            maxSize: 24,
             header: "__HIDDEN__",
             cell: ({ row }: any) => (
-              <IndeterminateCheckbox
-                checked={row.getIsSelected()}
-                disabled={!row.getCanSelect()}
-                onChange={row.getToggleSelectedHandler()}
-                label=""
-              />
+              <div
+                className="d-flex justify-content-center align-items-center w-100 h-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <IndeterminateCheckbox
+                  checked={row.getIsSelected()}
+                  disabled={!row.getCanSelect()}
+                  onChange={row.getToggleSelectedHandler()}
+                />
+              </div>
             ),
           },
         ],
@@ -145,12 +160,10 @@ export const BaseTable = forwardRef(
       return [selectionColumn, ...dynamicColumns];
     }, [headers]);
 
-    // Формируем фильтры колонок для локального поиска
     const columnFilters = useMemo<ColumnFiltersState>(() => {
       if (isServerSearch || !searchTerm || selectedColumn === "all") {
         return [];
       }
-      // Ищем дочерний идентификатор столбца или прямой ключ
       return [{ id: `${selectedColumn}_child`, value: searchTerm }];
     }, [isServerSearch, searchTerm, selectedColumn]);
 
@@ -198,7 +211,7 @@ export const BaseTable = forwardRef(
       [table],
     );
 
-    const isTableEmptyAndLoading = isLoading && rows.length === 0;
+    const isHeadersNotReady = !headers || headers.length === 0;
 
     return (
       <div className="table-container-gen">
@@ -206,31 +219,37 @@ export const BaseTable = forwardRef(
           <ColumnVisibilityControl table={table} />
         )}
         <div className="position-relative flex-grow-1 overflow-hidden d-flex flex-column min-vh-0">
+          {/* Аккуратный оверлей-лоадер поверх таблицы во время сетевых запросов */}
           {isLoading && (
             <div
+              className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center"
               style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(255, 255, 255, 0.7)",
-                zIndex: 10,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
+                backgroundColor: "rgba(255, 255, 255, 0.65)",
+                zIndex: 20,
                 backdropFilter: "blur(2px)",
               }}
             >
-              <div className="position-fixed top-50 start-50 translate-middle d-flex flex-column align-items-center">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Загрузка...</span>
-                </div>
+              <div className="spinner-border text-primary mb-2" role="status">
+                <span className="visually-hidden">Загрузка...</span>
               </div>
+              <span className="text-primary fw-semibold small">
+                Загрузка данных...
+              </span>
             </div>
           )}
-          {!isTableEmptyAndLoading && (
+
+          {/* Если заголовки еще не загрузились — показываем заглушку-спиннер вместо пустых строк */}
+          {isHeadersNotReady ? (
+            <div className="d-flex flex-column justify-content-center align-items-center flex-grow-1 bg-white border rounded">
+              <div
+                className="spinner-border text-secondary mb-2"
+                role="status"
+              ></div>
+              <div className="text-muted small">
+                Построение колонок реестра...
+              </div>
+            </div>
+          ) : (
             <TableWrapper tableContainerRef={tableContainerRef}>
               <table className="table-el">
                 <TableHeader<T>
